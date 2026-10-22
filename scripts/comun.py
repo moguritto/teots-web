@@ -692,7 +692,7 @@ class Limpiador:
                 for n in self.limpiar(c):
                     det.append(n)
                 nodos.append(det)
-        elif tipo in ("image-carousel", "image-gallery", "gallery", "media-carousel"):
+        elif tipo in ("image-carousel", "image-gallery", "gallery", "media-carousel", "nested-carousel", "wpr-image-carousel"):
             g = self.nuevo("div", class_="galeria")
             vistos = set()
             for img in cuerpo.find_all("img"):

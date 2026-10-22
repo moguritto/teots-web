@@ -35,6 +35,8 @@ def main(forzar=False):
              + (AQUI / "base.css").read_text(encoding="utf-8") + "\n"
              + (AQUI / "iconos.css").read_text(encoding="utf-8")
              + f"\n\n/* ===== Propio de {cfg['nombre']} ===== */\n" + cfg.get("css_extra", ""))
+    for vieja, nueva in cfg.get("sustituir_fuentes", {}).items():
+        texto = texto.replace(vieja, nueva)
     destino.parent.mkdir(parents=True, exist_ok=True)
     destino.write_text(texto, encoding="utf-8")
     print("docs/estilo.css creado")
