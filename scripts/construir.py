@@ -103,6 +103,45 @@ class Enlazador:
         return href  # página no migrada: se queda apuntando a la web antigua (lo avisa comprobar.py)
 
 
+def un_solo_h1(contenido, titulo, tipo):
+    """Deja exactamente un <h1> por página sin cambiar su aspecto."""
+    h1s = re.findall(r"<h1[\s>]", contenido)
+    if len(h1s) > 1:
+        primero = True
+
+        def bajar(m):
+            nonlocal primero
+            if primero:
+                primero = False
+                return m.group(0)
+            return "<h2 data-era-h1" + m.group(1)
+        contenido = re.sub(r"<h1([\s>])", bajar, contenido)
+        contenido = re.sub(r"(<h2 data-era-h1[^>]*>.*?)</h1>", r"\1</h2>", contenido, flags=re.S)
+        contenido = contenido.replace("<h2 data-era-h1", '<h2 class="como-h1"')
+    elif not h1s:
+        primera = re.search(r"<section\b.*?</section>", contenido, re.S)
+        candidatos = []
+        if primera and tipo != "sola":
+            for m in re.finditer(r"<(h2|h3|h4)([^>]*)>(.*?)</\1>", primera.group(0), re.S):
+                texto = re.sub("<[^>]+>", "", m.group(3)).strip()
+                if len(texto) < 2:
+                    continue
+                tams = [float(x) for x in re.findall(r"([\d.]+)px\)?\s*[;'\"]", m.group(2))]
+                tam = max(tams) if tams else {"h2": 30, "h3": 22, "h4": 18}[m.group(1)]
+                candidatos.append((-tam, m.start(), m))
+        m = min(candidatos)[2] if candidatos else None
+        if m:
+            ini = primera.start() + m.start()
+            fin = primera.start() + m.end()
+            attrs = m.group(2)
+            clase = "como-" + m.group(1)
+            attrs = attrs.replace('class="', f'class="{clase} ') if 'class="' in attrs else attrs + f' class="{clase}"'
+            contenido = contenido[:ini] + f"<h1{attrs}>{m.group(3)}</h1>" + contenido[fin:]
+        else:
+            contenido = f'<h1 class="oculto">{titulo}</h1>\n' + contenido
+    return contenido
+
+
 def reescribir(html, ruta, enlazar):
     def cambiar(m):
         nuevo = enlazar(m.group(2), ruta)
@@ -128,6 +167,7 @@ def main():
     def pagina(ruta, titulo, descripcion, contenido, tipo="normal", base_js=False, cab=None, pie_id=None):
         c = dict(cfg)
         c.update({k: v for k, v in cfg.get("cabeceras", {}).get(cab or cfg.get("cabecera_principal", ""), {}).items() if v})
+        contenido = un_solo_h1(contenido, titulo, tipo)
         html = plantilla.render(cfg=c, R=MARCA, pie=pies.get(pie_id or cfg.get("pie_principal", ""), pie), ruta=ruta, titulo=titulo, descripcion=descripcion,
                                 contenido=contenido, tipo=tipo, base_js=base_js,
                                 es_portada=(ruta == ""))

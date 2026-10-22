@@ -476,7 +476,40 @@ class Limpiador:
                 p.append(b)
                 self.aplicar_estilo(p, {k: v for k, v in estilo.items() if k == "text-align"})
                 nodos = [p]
-        elif tipo in ("video", "video-playlist"):
+        elif tipo == "video-playlist":
+            try:
+                ajustes = json.loads(w.get("data-settings") or "{}")
+            except ValueError:
+                ajustes = {}
+            if ajustes.get("playlist_title"):
+                h = self.nuevo("h3")
+                h.string = ajustes["playlist_title"]
+                nodos.append(h)
+            lista = self.nuevo("div", class_="lista-videos")
+            for tab in ajustes.get("tabs", []):
+                url = tab.get("youtube_url") or ""
+                m = re.search(r"(?:v=|youtu\.be/|embed/|shorts/)([\w-]{11})", url)
+                if not m:
+                    continue
+                a = self.nuevo("a", class_="tarjeta-video", href=f"https://www.youtube.com/watch?v={m.group(1)}",
+                               target="_blank", rel="noopener")
+                try:
+                    rel = guardar_imagen(f"https://i.ytimg.com/vi/{m.group(1)}/hqdefault.jpg", self.base)
+                except Exception:
+                    rel = None
+                if rel:
+                    a.append(self.nuevo("img", src=MARCA + rel, alt="", loading="lazy"))
+                t = self.nuevo("span", class_="titulo-video")
+                t.string = tab.get("title") or "Vídeo"
+                a.append(t)
+                if tab.get("duration"):
+                    d = self.nuevo("span", class_="duracion")
+                    d.string = tab["duration"]
+                    a.append(d)
+                lista.append(a)
+            if lista.contents:
+                nodos.append(lista)
+        elif tipo in ("video",):
             try:
                 ajustes = json.loads(w.get("data-settings") or "{}")
             except ValueError:

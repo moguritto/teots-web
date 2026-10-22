@@ -121,3 +121,19 @@ strong, b { font-weight: 700; }
 .opiniones blockquote { margin: 0; font-style: italic; }
 .opiniones figcaption { position: static; background: none; color: inherit; font-weight: 600; padding: 8px 0 0; }
 .rejilla.videos { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.lista-videos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin: 0 0 2em; }
+.tarjeta-video { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border: 1px solid rgba(0,0,0,.1); border-radius: 6px;
+                 text-decoration: none; color: inherit; background: #fff; }
+.tarjeta-video::before { content: "▶"; font-size: .9em; color: var(--color-enlace); }
+.tarjeta-video:has(img)::before { content: none; }
+.tarjeta-video img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 4px; }
+.tarjeta-video .titulo-video { font-weight: 600; }
+.tarjeta-video .duracion { font-size: .85em; opacity: .7; }
+.tarjeta-video:hover { border-color: var(--color-enlace); }
+.solo-movil { display: none; }
+@media (max-width: 767px) { .solo-movil { display: block; } .solo-escritorio { display: none; } }
+h1.como-h2 { font-size: clamp(1.6rem, 3.5vw, 2.2rem); }
+h2.como-h1 { font-size: clamp(2rem, 5vw, 3rem); }
+.oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+h1.como-h3 { font-size: 1.35rem; }
+h1.como-h4 { font-size: 1.1rem; }
