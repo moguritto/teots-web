@@ -202,3 +202,13 @@ h2.como-h1 { font-size: clamp(2rem, 5vw, 3rem); }
 .oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 h1.como-h3 { font-size: 1.35rem; }
 h1.como-h4 { font-size: 1.1rem; }
+
+/* === Ajustes medidos en la web original === */
+[style*="--fd:"]:not(#_) { font-size: var(--fd) !important; }
+@media (max-width: 1024px) { [style*="--fd:"][style*="--fm:"]:not(#_) { font-size: calc((var(--fd) + var(--fm)) / 2) !important; } }
+@media (max-width: 767px) { [style*="--fm:"]:not(#_) { font-size: var(--fm) !important; } }
+[style*="--velo:"] { position: relative; }
+[style*="--velo:"]::before { content: ""; position: absolute; inset: 0; background: var(--velo); pointer-events: none; z-index: 0; }
+[style*="--velo:"] > * { position: relative; z-index: 1; }
+[style*="--hd:"]:not(#_) { min-height: var(--hd) !important; display: flex; flex-direction: column; justify-content: center; }
+@media (max-width: 767px) { [style*="--hm:"]:not(#_) { min-height: var(--hm) !important; } }
