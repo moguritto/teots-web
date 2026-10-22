@@ -206,7 +206,7 @@ h1.como-h4 { font-size: 1.1rem; }
 /* === Ajustes medidos en la web original === */
 [style*="--fd:"]:not(#_) { font-size: var(--fd) !important; }
 @media (max-width: 1024px) { [style*="--fd:"][style*="--fm:"]:not(#_) { font-size: calc((var(--fd) + var(--fm)) / 2) !important; } }
-@media (max-width: 767px) { [style*="--fm:"]:not(#_) { font-size: var(--fm) !important; } }
+@media (max-width: 767px) { [style*="--fd:"][style*="--fm:"]:not(#_), [style*="--fm:"]:not(#_) { font-size: var(--fm) !important; } }
 [style*="--velo:"] { position: relative; }
 [style*="--velo:"]::before { content: ""; position: absolute; inset: 0; background: var(--velo); pointer-events: none; z-index: 0; }
 [style*="--velo:"] > * { position: relative; z-index: 1; }
