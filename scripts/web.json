@@ -1,0 +1,147 @@
+{
+ "nombre": "TEOTS",
+ "dominio": "teots.org",
+ "repo": "teots-web",
+ "idioma": "es",
+ "fuentes": "https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300&family=Poppins:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap",
+ "favicon": "img/favicon.png",
+ "logo": "",
+ "contacto": {
+  "whatsapp": "+34644632663",
+  "texto": "Escríbenos directamente:"
+ },
+ "enlaces": {},
+ "cabeceras": {
+  "6090": {
+   "logo": "img/output-onlinepngtools-5.webp",
+   "logo2": null,
+   "menu": [
+    {
+     "texto": "Inicio",
+     "url": "https://teots.org/"
+    },
+    {
+     "texto": "Psicología",
+     "url": "https://teots.org/psicologia/"
+    },
+    {
+     "texto": "Espacio TEOTS",
+     "url": "https://espacioteots.org/"
+    },
+    {
+     "texto": "Eventos",
+     "url": "https://teots.org/",
+     "hijos": [
+      {
+       "texto": "Proceso Crisálida",
+       "url": "https://teots.org/proceso-crisalida/"
+      }
+     ]
+    },
+    {
+     "texto": "Recursos",
+     "url": "https://teots.org/recursos/",
+     "hijos": [
+      {
+       "texto": "Videos",
+       "url": "https://teots.org/recursos/videos/"
+      },
+      {
+       "texto": "Libros",
+       "url": "https://teots.org/recursos/libros/"
+      },
+      {
+       "texto": "Documentales",
+       "url": "https://teots.org/recursos/documentales/"
+      },
+      {
+       "texto": "Películas",
+       "url": "https://teots.org/recursos/peliculas/"
+      },
+      {
+       "texto": "Eneagrama",
+       "url": "https://teots.org/eneagrama/",
+       "hijos": [
+        {
+         "texto": "Eneatipo 1",
+         "url": "https://teots.org/eneagrama/eneatipo-1/"
+        },
+        {
+         "texto": "Eneatipo 2",
+         "url": "https://teots.org/eneagrama/eneatipo-2/"
+        },
+        {
+         "texto": "Eneatipo 3",
+         "url": "https://teots.org/eneagrama/eneatipo-3/"
+        },
+        {
+         "texto": "Eneatipo 4",
+         "url": "https://teots.org/eneagrama/eneatipo-4/"
+        },
+        {
+         "texto": "Eneatipo 5",
+         "url": "https://teots.org/eneagrama/eneatipo-5/"
+        },
+        {
+         "texto": "Eneatipo 6",
+         "url": "https://teots.org/eneagrama/eneatipo-6/"
+        },
+        {
+         "texto": "Eneatipo 7",
+         "url": "https://teots.org/eneagrama/eneatipo-7/"
+        },
+        {
+         "texto": "Eneatipo 8",
+         "url": "https://teots.org/eneagrama/eneatipo-8/"
+        },
+        {
+         "texto": "Eneatipo 9",
+         "url": "https://teots.org/eneagrama/eneatipo-9/"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "texto": "Contacto",
+     "url": "https://teots.org/contacto/"
+    }
+   ],
+   "redes": []
+  }
+ },
+ "estilo": {
+  "color-fondo": "#FFFFFF",
+  "color-texto": "#333333",
+  "color-titulos": "#5C2B0B",
+  "color-enlace": "#8680CD",
+  "color-boton": "#B29E79",
+  "color-boton-texto": "#FFFFFF",
+  "color-cabecera": "#FFFFFF",
+  "color-menu": "#333333",
+  "color-menu-activo": "#B29E79",
+  "color-pie": "#F8F8F8",
+  "color-pie-texto": "#000000",
+  "fuente-texto": "\"Nunito Sans\", sans-serif",
+  "peso-texto": "300",
+  "fuente-titulos": "\"Nunito Sans\", sans-serif",
+  "peso-titulos": "600",
+  "fuente-menu": "\"Poppins\", sans-serif",
+  "ancho": "1140px",
+  "alto-logo": "60px",
+  "radio-boton": "4px"
+ },
+ "cabecera_principal": "6090",
+ "pie_principal": "12807",
+ "css_extra": ".pie p { margin: .3em 0; }\n.pie .redes { justify-content: center; }\n",
+ "redirecciones": {
+  "https://teots.org/nosotros/": "https://teots.org/sobre-mi/",
+  "https://teots.org/es/contacto/": "https://teots.org/contacto/",
+  "https://teots.org/aviso-legal/": "https://teots.org/inicio-3/aviso-legal/",
+  "https://teots.org/politica-de-privacidad/": "https://teots.org/inicio-3/politica-de-privacidad/",
+  "https://teots.org/libros/": "https://teots.org/recursos/libros/",
+  "https://teots.org/peliculas/": "https://teots.org/recursos/peliculas/",
+  "https://teots.org/documentales/": "https://teots.org/recursos/documentales/",
+  "https://teots.org/videos/": "https://teots.org/recursos/videos/"
+ }
+}

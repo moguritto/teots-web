@@ -1,0 +1,425 @@
+{
+ "": {
+  "titulo": "TEOTS | The Essence of the Soul",
+  "descripcion": "Consciousness Initiatives for a Better World",
+  "origen": "https://teots.org/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": [
+   "widget 'html' con JavaScript descartado",
+   "widget 'icon' limpiado de forma genérica"
+  ]
+ },
+ "psicologia/": {
+  "titulo": "Psicología",
+  "descripcion": "Psicología humanista y transpersonal, meditación y descarga psico-corporal.",
+  "origen": "https://teots.org/psicologia/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": [
+   "widget 'html' con JavaScript descartado"
+  ]
+ },
+ "sobre-mi/": {
+  "titulo": "Sobre mi",
+  "descripcion": "Psicología humanista y transpersonal en A Coruña, Lugo y online.",
+  "origen": "https://teots.org/sobre-mi/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "contacto/": {
+  "titulo": "Contacto",
+  "descripcion": "Psicología humanista y transpersonal en A Coruña, Lugo y online.",
+  "origen": "https://teots.org/contacto/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": [
+   "widget 'html' con JavaScript descartado"
+  ]
+ },
+ "eneagrama/": {
+  "titulo": "Eneagrama",
+  "descripcion": "El eneagrama es, en esencia, una herramienta de autodescubrimiento. Su principal función es ayudarte a descubrir un mapa del inconsciente.",
+  "origen": "https://teots.org/eneagrama/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": [
+   "widget 'tabs' limpiado de forma genérica"
+  ]
+ },
+ "eneagrama/eneatipo-1/": {
+  "titulo": "Eneatipo 1",
+  "descripcion": "Pecado: La iraFijación: ResentimientoVirtud: Serenidad",
+  "origen": "https://teots.org/eneagrama/eneatipo-1/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "eneagrama/eneatipo-2/": {
+  "titulo": "Eneatipo 2",
+  "descripcion": "Pecado: El orgulloFijación: HalagoVirtud: Humildad",
+  "origen": "https://teots.org/eneagrama/eneatipo-2/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "eneagrama/eneatipo-3/": {
+  "titulo": "Eneatipo 3",
+  "descripcion": "Pecado: La vanidadFijación: SuperficialidadVirtud: Autenticidad",
+  "origen": "https://teots.org/eneagrama/eneatipo-3/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "eneagrama/eneatipo-4/": {
+  "titulo": "Eneatipo 4",
+  "descripcion": "Pecado: La envidiaFijación: MelancolíaVirtud: Ecuanimidad-Desapasionamiento",
+  "origen": "https://teots.org/eneagrama/eneatipo-4/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "eneagrama/eneatipo-5/": {
+  "titulo": "Eneatipo 5",
+  "descripcion": "Pecado: La avariciaFijación: MezquindadVirtud: Desapego",
+  "origen": "https://teots.org/eneagrama/eneatipo-5/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "eneagrama/eneatipo-6/": {
+  "titulo": "Eneatipo 6",
+  "descripcion": "Pecado: El miedoFijación: DudaVirtud: Valor - Coraje",
+  "origen": "https://teots.org/eneagrama/eneatipo-6/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "eneagrama/eneatipo-7/": {
+  "titulo": "Eneatipo 7",
+  "descripcion": "Pecado: La gulaFijación: PlanificaciónVirtud: Sobriedad - templanza",
+  "origen": "https://teots.org/eneagrama/eneatipo-7/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "eneagrama/eneatipo-8/": {
+  "titulo": "Eneatipo 8",
+  "descripcion": "Pecado: La lujuriaFijación: VenganzaVirtud: Inocencia",
+  "origen": "https://teots.org/eneagrama/eneatipo-8/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "eneagrama/eneatipo-9/": {
+  "titulo": "Eneatipo 9",
+  "descripcion": "Pecado: La perezaFijación: Resignación - IndolenciaVirtud: Acción - Diligencia",
+  "origen": "https://teots.org/eneagrama/eneatipo-9/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "la-importancia-de-los-habitos/": {
+  "titulo": "La Importancia de los Hábitos para Transformar tu Vida",
+  "descripcion": "La disciplina y los hábitos pueden ayudar en nuestro proceso, aunque la clave sea la consciencia del momento.",
+  "origen": "https://teots.org/la-importancia-de-los-habitos/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/": {
+  "titulo": "Recursos",
+  "descripcion": "Psicología humanista y transpersonal en Barcelona, Galicia y online.",
+  "origen": "https://teots.org/recursos/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/libros/": {
+  "titulo": "Libros",
+  "descripcion": "Psicología humanista y transpersonal en A Coruña, Lugo y online.",
+  "origen": "https://teots.org/recursos/libros/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/videos/": {
+  "titulo": "Videos",
+  "descripcion": "Psicología humanista y transpersonal en A Coruña, Lugo y online.",
+  "origen": "https://teots.org/recursos/videos/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "crisalida-rabia/": {
+  "titulo": "Proceso Crisálida | Del 22 al 26 de mayo de 2024",
+  "descripcion": "La Importancia de Reconocer y Sentir la Rabia en el Proceso de Sanación",
+  "origen": "https://teots.org/crisalida-rabia/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "crisalida-patrones/": {
+  "titulo": "Proceso Crisálida | Del 22 al 26 de mayo de 2024",
+  "descripcion": "La Importancia de Reconocer Patrones Heredados en el Proceso de Sanación",
+  "origen": "https://teots.org/crisalida-patrones/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "proceso-crisalida/": {
+  "titulo": "Proceso Crisálida | Del 16 al 20 de octubre",
+  "descripcion": "Limpieza de la herida familiar​. Es clave en el proceso personal. Una vía efectiva para curar tu herida familiar, y por tanto, la relación con tus padres.",
+  "origen": "https://teots.org/proceso-crisalida/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "meditacion/": {
+  "titulo": "Meditación",
+  "descripcion": "Psicología humanista y transpersonal en A Coruña, Lugo y online.",
+  "origen": "https://teots.org/meditacion/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "yoga/": {
+  "titulo": "Yoga",
+  "descripcion": "Psicoterapia | Yoga | Meditación | Expresión corporal por un mundo más consciente.",
+  "origen": "https://teots.org/yoga/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "expresion-corporal/": {
+  "titulo": "Expresión corporal",
+  "descripcion": "Psicoterapia | Yoga | Meditación | Expresión corporal por un mundo más consciente.",
+  "origen": "https://teots.org/expresion-corporal/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "descarga-psico-corporal/": {
+  "titulo": "Descarga Psico-corporal",
+  "descripcion": "Psicología humanista y transpersonal en A Coruña, Lugo y online.",
+  "origen": "https://teots.org/descarga-psico-corporal/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/peliculas/": {
+  "titulo": "Películas",
+  "descripcion": "Psicología humanista y transpersonal en A Coruña, Lugo y online.",
+  "origen": "https://teots.org/recursos/peliculas/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/documentales/": {
+  "titulo": "Documentales",
+  "descripcion": "Psicología humanista y transpersonal en A Coruña, Lugo y online.",
+  "origen": "https://teots.org/recursos/documentales/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/peliculas/soul/": {
+  "titulo": "Soul",
+  "descripcion": "https://www.youtube.com/watch?v=85hY9bninqU",
+  "origen": "https://teots.org/recursos/peliculas/soul/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/peliculas/lucky/": {
+  "titulo": "Lucky",
+  "descripcion": "Título original: Lucky",
+  "origen": "https://teots.org/recursos/peliculas/lucky/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/peliculas/el-guardian-de-suenos/": {
+  "titulo": "El guardián de sueños￼",
+  "descripcion": "El guardián de sueños",
+  "origen": "https://teots.org/recursos/peliculas/el-guardian-de-suenos/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/peliculas/kiriku-y-la-bruja/": {
+  "titulo": "Kiriku y la bruja",
+  "descripcion": "Título original: Kirikou et la sorcière",
+  "origen": "https://teots.org/recursos/peliculas/kiriku-y-la-bruja/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/peliculas/violines-en-el-cielo/": {
+  "titulo": "Violines en el cielo",
+  "descripcion": "Título original: Okuribito (Departures)",
+  "origen": "https://teots.org/recursos/peliculas/violines-en-el-cielo/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/peliculas/la-cabana/": {
+  "titulo": "La Cabaña",
+  "descripcion": "Título original:  The Shack",
+  "origen": "https://teots.org/recursos/peliculas/la-cabana/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/peliculas/el-guerrero-pacifico/": {
+  "titulo": "El guerrero pacífico",
+  "descripcion": "El guerrero pacífico",
+  "origen": "https://teots.org/recursos/peliculas/el-guerrero-pacifico/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/peliculas/el-planeta-libre/": {
+  "titulo": "El planeta libre",
+  "descripcion": "Título original:  La belle verte",
+  "origen": "https://teots.org/recursos/peliculas/el-planeta-libre/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/peliculas/el-cambio/": {
+  "titulo": "El cambio",
+  "descripcion": "El cambio",
+  "origen": "https://teots.org/recursos/peliculas/el-cambio/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/peliculas/disfrutando-cada-momento/": {
+  "titulo": "Disfrutando cada momento",
+  "descripcion": "Disfrutando de cada momento",
+  "origen": "https://teots.org/recursos/peliculas/disfrutando-cada-momento/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/documentales/el-guion-de-tu-vida/": {
+  "titulo": "El guion de tu vida",
+  "descripcion": "El guión de tu vida",
+  "origen": "https://teots.org/recursos/documentales/el-guion-de-tu-vida/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/documentales/voces-de-la-tierra/": {
+  "titulo": "Voces de la tierra: Claudio Naranjo",
+  "descripcion": "Voces de la tierra: Claudio Naranjo",
+  "origen": "https://teots.org/recursos/documentales/voces-de-la-tierra/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/documentales/crazywise/": {
+  "titulo": "Crazywise",
+  "descripcion": "Crazywise",
+  "origen": "https://teots.org/recursos/documentales/crazywise/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/documentales/nino-divino-conversaciones-con-claudio-naranjo/": {
+  "titulo": "Niño divino: Conversaciones con Claudio Naranjo",
+  "descripcion": "Niño Divino",
+  "origen": "https://teots.org/recursos/documentales/nino-divino-conversaciones-con-claudio-naranjo/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/documentales/the-wisdom-of-trauma/": {
+  "titulo": "The Wisdom of Trauma",
+  "descripcion": "The Wisdom of Trauma",
+  "origen": "https://teots.org/recursos/documentales/the-wisdom-of-trauma/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "recursos/documentales/viaje-interior-claudio-naranjo/": {
+  "titulo": "Viaje Interior (Claudio Naranjo)",
+  "descripcion": "Viaje Interior",
+  "origen": "https://teots.org/recursos/documentales/viaje-interior-claudio-naranjo/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ },
+ "inicio-3/aviso-legal/": {
+  "titulo": "Aviso Legal",
+  "descripcion": "",
+  "origen": "https://espacioteots.org/aviso-legal/ (datos del titular, dominio adaptado)",
+  "plantilla": "normal",
+  "cabecera": "6090",
+  "pie": "12807",
+  "avisos": []
+ },
+ "inicio-3/politica-de-privacidad/": {
+  "titulo": "Política de Privacidad",
+  "descripcion": "",
+  "origen": "https://espacioteots.org/politica-de-privacidad/ (datos del titular, dominio adaptado)",
+  "plantilla": "normal",
+  "cabecera": "6090",
+  "pie": "12807",
+  "avisos": []
+ },
+ "retiro-verano-2023/": {
+  "titulo": "Retiro de verano 2023",
+  "descripcion": "“RETIRO DE PROFUNDIZACIÓN PARA CONECTARSE CON UNO MISMO”​. Del 30 de Junio al viernes 7 de Julio de 2023.",
+  "origen": "https://teots.org/retiro-verano-2023/",
+  "cabecera": "6090",
+  "pie": "12807",
+  "plantilla": "normal",
+  "avisos": []
+ }
+}

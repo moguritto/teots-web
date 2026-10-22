@@ -24,6 +24,8 @@ def main(externos=False):
             continue
         rel = f.relative_to(DOCS)
         html = f.read_text(encoding="utf-8")
+        if "data-redireccion" in html:
+            continue
         for attr, url in re.findall(r'(href|src)="([^"]*)"', html):
             if url.startswith(("mailto:", "tel:", "data:")):
                 continue
@@ -59,6 +61,18 @@ def main(externos=False):
             if not destino.exists():
                 tipo = "imagen que falta" if attr == "src" else "enlace roto"
                 problemas.append((rel, tipo, url))
+            elif u.fragment and destino.suffix == ".html" and \
+                    f'id="{u.fragment}"' not in destino.read_text(encoding="utf-8"):
+                problemas.append((rel, "ancla que no existe en la otra página", url))
+    # letras usadas en la web que no se cargan desde Google Fonts
+    usadas = set()
+    for f in DOCS.rglob("*.html"):
+        usadas |= set(re.findall(r'font-family:\s*"?([^",;]+)', f.read_text(encoding="utf-8")))
+    usadas |= set(re.findall(r'font-family:\s*"([^"]+)"', (DOCS / "estilo.css").read_text(encoding="utf-8")))
+    cargadas = (cfg.get("fuentes") or "").replace("+", " ")
+    for letra in sorted(usadas):
+        if letra.strip().lower() not in ("sans-serif", "serif", "monospace", "inherit") and letra.strip() not in cargadas:
+            problemas.append(("estilo", "letra que no se carga (añadir a 'fuentes' en web.json)", letra.strip()))
     if not problemas:
         print("Sin problemas.")
     for rel, tipo, url in problemas:

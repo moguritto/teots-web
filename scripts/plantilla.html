@@ -22,7 +22,7 @@
 {% if tipo != "sola" %}
 <header class="cabecera">
   <div class="ancho">
-    <a class="logo" href="{{ R }}"><img src="{{ R }}{{ cfg.logo }}" alt="{{ cfg.nombre }}"></a>
+    <a class="logo" href="{{ R }}./"><img src="{{ R }}{{ cfg.logo }}" alt="{{ cfg.nombre }}">{% if cfg.logo2 %}<img src="{{ R }}{{ cfg.logo2 }}" alt="">{% endif %}</a>
     <input type="checkbox" id="menu-movil" class="menu-check">
     <label for="menu-movil" class="menu-boton" aria-label="Abrir menú"><span></span></label>
     <nav class="menu">
@@ -33,6 +33,13 @@
         </li>
       {% endfor %}
       </ul>
+      {% if cfg.redes %}
+      <ul class="redes">
+      {% for r in cfg.redes %}
+        <li><a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.texto }}</a></li>
+      {% endfor %}
+      </ul>
+      {% endif %}
       {% if cfg.boton_cabecera %}
       <a class="boton boton-cabecera" href="{{ cfg.boton_cabecera.url }}">{{ cfg.boton_cabecera.texto }}</a>
       {% endif %}

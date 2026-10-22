@@ -10,7 +10,34 @@ import json
 import re
 import sys
 
-from comun import CONTENIDO, config, convertir, ruta_de_url, slug_de_ruta
+from bs4 import BeautifulSoup
+
+from comun import CONTENIDO, RAIZ_REPO, config, convertir, datos_cabecera, descargar, ruta_de_url, slug_de_ruta
+
+
+def guardar_pie(url, destino):
+    t, d, html, av = convertir(url, zona_css=".elementor-location-footer", cfg=config())
+    html = re.sub(r'<h2 style="color:#0+">.*?</h2>', "", html)          # separadores invisibles
+    html = re.sub(r"<(/?)h[1-4]([ >])", r"<\1p\2", html)              # en el pie, sin títulos
+    html = re.sub(r'href="#([^"]+)"', lambda m: f'href="{url.split("#")[0]}#{m.group(1)}"', html)  # anclas del pie
+    (CONTENIDO / destino).write_text(html + "\n", encoding="utf-8")
+    print(f"pie guardado en contenido/{destino}")
+
+
+def variantes(url, cfg):
+    """Cada página guarda qué cabecera y pie de Elementor usa; se extraen la primera vez."""
+    soup = BeautifulSoup(descargar(url), "html.parser")
+    h = soup.select_one(".elementor-location-header")
+    f = soup.select_one(".elementor-location-footer")
+    cab = h.get("data-elementor-id") if h else None
+    pie = f.get("data-elementor-id") if f else None
+    cfg.setdefault("cabeceras", {})
+    if cab and cab not in cfg["cabeceras"]:
+        cfg["cabeceras"][cab] = datos_cabecera(soup, url)
+        print(f"cabecera {cab} añadida a scripts/web.json (revisa el menú)")
+    if pie and not (CONTENIDO / f"_pie-{pie}.html").exists():
+        guardar_pie(url, f"_pie-{pie}.html")
+    return cab, pie
 
 
 def main(args):
@@ -27,11 +54,7 @@ def main(args):
             urls += [l.split("\t")[-1].strip() for l in open(args[i + 1], encoding="utf-8") if l.strip() and not l.startswith("#")]
             i += 1
         elif a == "--pie":
-            t, d, html, av = convertir(args[i + 1], zona_css=".elementor-location-footer", cfg=cfg)
-            html = re.sub(r'<h2 style="color:#0+">.*?</h2>', "", html)          # separadores invisibles
-            html = re.sub(r"<(/?)h[1-4]([ >])", r"<\1p\2", html)              # en el pie, sin títulos
-            (CONTENIDO / "_pie.html").write_text(html + "\n", encoding="utf-8")
-            print("pie guardado en contenido/_pie.html", av)
+            guardar_pie(args[i + 1], "_pie.html")
             i += 1
         elif a == "--sola":
             plantilla = "sola"
@@ -44,10 +67,13 @@ def main(args):
         slug = slug_de_ruta(ruta)
         (CONTENIDO / "paginas" / f"{slug}.html").write_text(html + "\n", encoding="utf-8")
         previa = indice.get(ruta, {})
-        indice[ruta] = {"titulo": titulo, "descripcion": desc, "origen": url,
+        cab, pie = variantes(url, cfg)
+        indice[ruta] = {"titulo": previa.get("titulo") or titulo, "descripcion": desc, "origen": url,
+                        "cabecera": previa.get("cabecera", cab), "pie": previa.get("pie", pie),
                         "plantilla": previa.get("plantilla", plantilla) if plantilla == "normal" else plantilla,
                         "avisos": avisos}
         print(f"/{ruta}  ->  {titulo!r}  ({len(html)} caracteres)" + (f"  avisos: {avisos}" if avisos else ""))
+    (RAIZ_REPO / "scripts" / "web.json").write_text(json.dumps(cfg, indent=1, ensure_ascii=False), encoding="utf-8")
     indice_f.write_text(json.dumps(indice, indent=1, ensure_ascii=False), encoding="utf-8")
 
 

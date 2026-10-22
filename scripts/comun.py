@@ -200,7 +200,9 @@ def css_de_pagina(soup, base_url):
     return reglas_css("\n".join(textos))
 
 
-PROPIEDADES = ("background-color", "background-image", "color", "text-align")
+PROPIEDADES = ("background-color", "background-image", "color", "text-align", "font-family", "font-size",
+               "font-weight", "font-style", "text-transform", "letter-spacing", "line-height",
+               "min-height", "--min-height", "width", "max-width")
 
 
 def estilo_de(reglas, el_id, interior=""):
@@ -315,6 +317,9 @@ class Limpiador:
                 continue
             if "elementor-screen-only" in (c.get("class") or []):
                 continue
+            if nombre == "img" and ("emoji" in (c.get("class") or []) or "s.w.org/images/core/emoji" in (c.get("src") or "")):
+                destino.append(c.get("alt") or "")
+                continue
             if nombre == "img":
                 t = self.imagen(c)
                 if t:
@@ -325,10 +330,16 @@ class Limpiador:
                 if t:
                     destino.append(t)
                 continue
+            if nombre == "p":
+                grande = [int(float(x)) for x in re.findall(r"font-size:\s*([\d.]+)px", str(c))]
+                if grande and min(grande) >= 22 and len(c.get_text(strip=True)) < 120:
+                    nombre = "h2" if min(grande) >= 28 else "h3"
             if nombre in PERMITIDAS:
                 attrs = {}
                 if nombre == "a":
                     href = (c.get("href") or "").strip()
+                    if re.fullmatch(r"\+?\d[\d\s]{6,}", href):
+                        href = "tel:" + href.replace(" ", "")
                     if href and not href.startswith(("javascript:",)):
                         attrs["href"] = urljoin(self.base, href) if not href.startswith(("#", "mailto:", "tel:")) else href
                     if c.get("target") == "_blank":
@@ -339,6 +350,16 @@ class Limpiador:
                 t = self.nuevo(nombre, **attrs)
                 self.limpiar_hijos(c, t)
                 destino.append(t)
+            elif c.name in ("div", "section", "article") and destino.name not in ("p", "li", "h1", "h2", "h3", "h4", "a", "strong", "em", "summary", "td", "th", "figcaption") \
+                    and not c.find(["p", "div", "ul", "ol", "h1", "h2", "h3", "h4", "h5", "h6", "table", "blockquote", "figure", "iframe", "section"]):
+                # <div> que solo tiene texto: es un párrafo
+                if c.get_text(strip=True) or c.find("img"):
+                    grande = [int(float(x)) for x in re.findall(r"font-size:\s*([\d.]+)px", str(c))]
+                    t = self.nuevo("p")
+                    if grande and min(grande) >= 22 and len(c.get_text(strip=True)) < 120:
+                        t = self.nuevo("h2" if min(grande) >= 28 else "h3")
+                    self.limpiar_hijos(c, t)
+                    destino.append(t)
             else:
                 # div, span, etc.: se quedan solo sus hijos
                 if c.name in ("div", "section", "article") and destino.contents:
@@ -397,11 +418,14 @@ class Limpiador:
                 tag = "p"
             t = self.nuevo(tag)
             self.limpiar_hijos(tit, t)
-            st = {**estilo, **estilo_t}
-            self.aplicar_estilo(t, st)
+            st = {**{k: v for k, v in estilo.items() if k in ("text-align", "color")},
+                  **{k: v for k, v in estilo_t.items() if k not in ("width", "max-width")}}
+            self.aplicar_estilo(t, {k: v for k, v in st.items() if "min-height" not in k})
             nodos = [t]
         elif tipo == "text-editor":
             nodos = self.limpiar(cuerpo)
+            estilo = {k: v for k, v in estilo.items() if k in ("color", "text-align", "font-style", "font-family",
+                                                              "font-size", "font-weight", "line-height")}
             if estilo:
                 envol = self.nuevo("div")
                 for n in nodos:
@@ -412,6 +436,10 @@ class Limpiador:
             img = cuerpo.find("img")
             if img:
                 t = self.imagen(img)
+                ei = estilo_de(self.reglas, w.get("data-id"), " img")
+                ei = {k: v for k, v in ei.items() if k in ("width", "max-width") and "%" in v or k == "max-width"}
+                if t is not None and ei:
+                    self.aplicar_estilo(t, ei)
                 a = img.find_parent("a")
                 if t is not None and a and a.get("href") and not a["href"].startswith("#"):
                     enl = self.nuevo("a", href=urljoin(self.base, a["href"]))
@@ -440,6 +468,10 @@ class Limpiador:
                     b["target"] = "_blank"
                     b["rel"] = "noopener"
                 b.string = texto
+                eb = estilo_de(self.reglas, w.get("data-id"), " .elementor-button")
+                eb = {k: v for k, v in eb.items() if k in ("background-color", "color")}
+                if eb:
+                    self.aplicar_estilo(b, eb)
                 p = self.nuevo("p", class_="botones")
                 p.append(b)
                 self.aplicar_estilo(p, {k: v for k, v in estilo.items() if k == "text-align"})
@@ -518,6 +550,124 @@ class Limpiador:
                 b.string = bot.get_text(" ", strip=True)
                 caja.append(b)
             nodos = [caja] if caja.contents else []
+        elif tipo == "wpr-team-member":
+            caja = self.nuevo("div", class_="caja tarjeta")
+            img = cuerpo.find("img")
+            if img and self.imagen(img) is not None:
+                caja.append(self.imagen(img))
+            for clase, etiqueta in (("wpr-member-name", "h3"), ("wpr-member-job", "p")):
+                e = cuerpo.select_one("." + clase)
+                if e and e.get_text(strip=True):
+                    t = self.nuevo(etiqueta, class_="cargo" if etiqueta == "p" else None)
+                    t.string = e.get_text(" ", strip=True)
+                    caja.append(t)
+            desc = cuerpo.select_one(".wpr-member-description")
+            if desc:
+                for n in self.limpiar(desc):
+                    caja.append(n)
+            redes = self.nuevo("ul", class_="redes")
+            for a in cuerpo.select(".wpr-member-social-media a, .wpr-member-social a"):
+                if a.get("href"):
+                    li = self.nuevo("li")
+                    enl = self.nuevo("a", href=a["href"] if not re.fullmatch(r"\+?\d[\d\s]{6,}", a["href"]) else "tel:" + a["href"].replace(" ", ""),
+                                     target="_blank", rel="noopener")
+                    enl.string = a.get_text(" ", strip=True) or a["href"]
+                    li.append(enl)
+                    redes.append(li)
+            if redes.contents:
+                caja.append(redes)
+            nodos = [caja]
+        elif tipo == "wpr-promo-box":
+            caja = self.nuevo("div", class_="promo")
+            fondo = cuerpo.select_one(".wpr-promo-box-bg-image")
+            m = re.search(r"url\(['\"]?([^'\")]+)", (fondo.get("style") or "") if fondo else "")
+            if m:
+                self.aplicar_estilo(caja, {"background-image": f"url({m.group(1)})"})
+            interior = self.nuevo("div", class_="promo-texto")
+            caja.append(interior)
+            tit = cuerpo.select_one(".wpr-promo-box-title")
+            if tit and tit.get_text(strip=True):
+                h = self.nuevo("h3")
+                h.string = tit.get_text(" ", strip=True).replace("\u200b", "")
+                interior.append(h)
+            desc = cuerpo.select_one(".wpr-promo-box-description")
+            if desc:
+                for n in self.limpiar(desc):
+                    if n.name in ("h1", "h2", "h3", "h4"):
+                        n.name = "p"
+                    interior.append(n)
+            bot = cuerpo.select_one(".wpr-promo-box-btn, a.wpr-promo-box-btn")
+            if bot and bot.get("href") and bot.get_text(strip=True):
+                b = self.nuevo("a", class_="boton", href=urljoin(self.base, bot["href"]))
+                b.string = bot.get_text(" ", strip=True)
+                interior.append(b)
+            nodos = [caja]
+        elif tipo in ("slides", "wpr-slider"):
+            car = self.nuevo("div", class_="carrusel")
+            for sl in cuerpo.select(".swiper-slide:not(.swiper-slide-duplicate)"):
+                rep = [c for c in sl.get("class", []) if c.startswith("elementor-repeater-item-")]
+                fondo = {}
+                if rep:
+                    for sel, decl in self.reglas:
+                        if rep[0] in sel and "background-image" in decl:
+                            m = re.search(r"background-image:\s*url\(['\"]?([^'\")]+)", decl)
+                            if m:
+                                fondo = m.group(1)
+                img_t = None
+                if fondo:
+                    rel = guardar_imagen(fondo, self.base)
+                    if rel:
+                        img_t = self.nuevo("img", src=MARCA + rel, alt=sl.select_one(".swiper-slide-bg").get("aria-label", "") if sl.select_one(".swiper-slide-bg") else "", loading="lazy")
+                elif sl.find("img"):
+                    img_t = self.imagen(sl.find("img"))
+                textos = sl.select_one(".swiper-slide-contents")
+                fig = self.nuevo("figure")
+                if img_t is not None:
+                    enl = sl.select_one("a.swiper-slide-inner[href]")
+                    if enl:
+                        a = self.nuevo("a", href=urljoin(self.base, enl["href"]))
+                        a.append(img_t)
+                        img_t = a
+                    fig.append(img_t)
+                if textos and textos.get_text(strip=True):
+                    cap = self.nuevo("figcaption")
+                    for n in self.limpiar(textos):
+                        cap.append(n)
+                    fig.append(cap)
+                if fig.contents:
+                    car.append(fig)
+            nodos = [car] if car.contents else []
+        elif tipo in ("testimonial-carousel", "reviews"):
+            car = self.nuevo("div", class_="carrusel opiniones")
+            for sl in cuerpo.select(".swiper-slide:not(.swiper-slide-duplicate)"):
+                txt = sl.select_one(".elementor-testimonial__text, .elementor-testimonial__content")
+                if not txt or not txt.get_text(strip=True):
+                    continue
+                fig = self.nuevo("figure")
+                bq = self.nuevo("blockquote")
+                for n in self.limpiar(txt):
+                    bq.append(n)
+                fig.append(bq)
+                nom = sl.select_one(".elementor-testimonial__name, cite")
+                if nom and nom.get_text(strip=True):
+                    fc = self.nuevo("figcaption")
+                    fc.string = nom.get_text(" ", strip=True)
+                    fig.append(fc)
+                car.append(fig)
+            nodos = [car] if car.contents else []
+        elif tipo in ("html", "shortcode") and not cuerpo.find("iframe") and \
+                len(set(re.findall(r"youtube\.com/watch\?v=([\w-]{11})", str(cuerpo)))) >= 2:
+            # lista de vídeos de YouTube hecha con HTML propio: se muestran los vídeos incrustados
+            ids = list(dict.fromkeys(re.findall(r"youtube\.com/watch\?v=([\w-]{11})", str(cuerpo))))[:6]
+            rej = self.nuevo("div", class_="rejilla videos")
+            for i in ids:
+                rej.append(self.iframe(f"https://www.youtube-nocookie.com/embed/{i}"))
+            nodos = [rej]
+        elif tipo in ("html", "shortcode") and (cuerpo.find("script") or cuerpo.select("[class*=feed], [class*=yottie], [class*=sbi], [class*=instagram], [id*=feed]")):
+            # incrustaciones con JavaScript (feeds de YouTube/Instagram...): solo se conservan los iframes de vídeo
+            nodos = [self.iframe(f.get("src") or f.get("data-src")) for f in cuerpo.find_all("iframe")]
+            if not any(nodos):
+                self.avisos.append(f"widget '{tipo}' con JavaScript descartado")
         elif tipo in ("divider",):
             nodos = [self.nuevo("hr")]
         elif tipo in ("spacer", "nav-menu", "search-form"):
@@ -562,8 +712,24 @@ class Limpiador:
 
     def aplicar_estilo(self, t, estilo):
         partes = []
+        if "--min-height" in estilo:
+            estilo = dict(estilo)
+            estilo.setdefault("min-height", estilo.pop("--min-height"))
         for k, v in estilo.items():
-            if k == "background-image":
+            if k.startswith("--") or "var(--e-global-typography" in v or (k == "min-height" and v.startswith("0")):
+                continue
+            if k == "font-family":
+                v = v.replace("Sans-serif", "sans-serif")
+            if k == "font-size":
+                m = re.fullmatch(r"([\d.]+)px", v)
+                if m and float(m.group(1)) >= 26:
+                    n = float(m.group(1))
+                    v = f"clamp({max(22, round(n * .6))}px, {round(n / 13.66, 1)}vw, {v})"
+            if k == "min-height":
+                t["class"] = ((" ".join(t["class"]) if isinstance(t.get("class"), list) else t.get("class", "")) + " centrado").strip()
+            if k == "background-image" and "gradient(" in v:
+                partes.append(f"background-image:{v}")
+            elif k == "background-image":
                 m = re.search(r"url\(['\"]?([^'\")]+)", v)
                 rel = guardar_imagen(m.group(1), self.base) if m else None
                 if rel:
@@ -605,6 +771,14 @@ class Limpiador:
             return [("item", c) for c in inner.find_all(True, recursive=False)]
         return [("item", c) for c in el.find_all(True, recursive=False)]
 
+    def columnas_rejilla(self, el):
+        """Si el contenedor es una rejilla (display:grid), devuelve el número de columnas."""
+        for sel, decl in self.reglas:
+            if re.search(rf"elementor-element-{el.get('data-id')}\s*$", sel.split(",")[0]) and "--display:grid" in decl:
+                m = re.search(r"--e-con-grid-template-columns:\s*repeat\(\s*(\d+)", decl)
+                return int(m.group(1)) if m else 2
+        return 0
+
     def es_fila(self, el):
         try:
             aj = json.loads(el.get("data-settings") or "{}")
@@ -623,14 +797,26 @@ class Limpiador:
             return []
         cl = el.get("class") or []
         if "elementor-widget" in cl:
-            return self.widget(el)
+            res = self.widget(el)
+            if el.get("id"):
+                res = [self.nuevo("span", id=el["id"], class_="ancla")] + res
+            return res
         if "elementor-section" in cl:
-            cols = [self.html(self.nodos_de(c, nivel + 1)) for _, c in self.hijos_estructura(el) if not oculto_en_escritorio(c)]
+            cols = [self.columna(c, nivel) for _, c in self.hijos_estructura(el) if not oculto_en_escritorio(c)]
             cols = [c for c in cols if c.strip()]
             return self.envolver(el, cols, nivel, fila=True)
         if "e-con" in cl:
             hijos = [c for _, c in self.hijos_estructura(el) if not oculto_en_escritorio(c)]
             subcon = [c for c in hijos if "e-con" in (c.get("class") or [])]
+            rejilla = self.columnas_rejilla(el)
+            if rejilla and len(hijos) > 1:
+                partes = [self.html(self.nodo(c, nivel + 1)) for c in hijos]
+                caja = self.envolver(el, ["\n".join(p for p in partes if p.strip())], nivel, fila=False)
+                if caja:
+                    destino = caja[0].find(class_="ancho") or caja[0]
+                    destino["class"] = (" ".join(destino["class"]) if isinstance(destino.get("class"), list) else destino.get("class", "")) + " rejilla"
+                    destino["style"] = (destino.get("style", "") + f";grid-template-columns:repeat({rejilla}, 1fr)").lstrip(";")
+                return caja
             if self.es_fila(el) and len(hijos) > 1:
                 cols = [self.html(self.nodo(c, nivel + 1)) for c in hijos]
                 cols = [c for c in cols if c.strip()]
@@ -642,6 +828,24 @@ class Limpiador:
         # elemento no Elementor (p. ej. contenido de una entrada normal)
         return self.limpiar(el) if el.name not in DESCARTAR else []
 
+    def columna(self, c, nivel):
+        """Contenido de una columna; si solo tiene una imagen de fondo, se convierte en <img>."""
+        html = self.html(self.nodos_de(c, nivel + 1))
+        fondo = {}
+        for interior in (" > .elementor-element-populated", " > .elementor-widget-wrap", ""):
+            fondo.update({k: v for k, v in estilo_de(self.reglas, c.get("data-id"), interior).items()
+                          if k in ("background-color", "background-image")})
+        m = re.search(r"url\(['\"]?([^'\")]+)", fondo.get("background-image", ""))
+        if m and not html.strip():
+            rel = guardar_imagen(m.group(1), self.base)
+            return f'<p class="imagen imagen-columna"><img src="{MARCA}{rel}" alt="" loading="lazy"></p>' if rel else ""
+        if fondo and html.strip():
+            d = self.nuevo("div", class_="grupo con-fondo")
+            self.aplicar_estilo(d, fondo)
+            d.append(BeautifulSoup(html, "html.parser"))
+            return str(d)
+        return html
+
     def nodos_de(self, el, nivel):
         res = []
         for _, c in self.hijos_estructura(el):
@@ -650,8 +854,17 @@ class Limpiador:
 
     def envolver(self, el, cols, nivel, fila):
         if not any(c.strip() for c in cols):
+            # contenedor vacío con imagen de fondo: se convierte en imagen
+            fondo = estilo_de(self.reglas, el.get("data-id")).get("background-image", "")
+            m = re.search(r"url\(['\"]?([^'\")]+)", fondo)
+            rel = guardar_imagen(m.group(1), self.base) if m else None
+            if rel:
+                return [BeautifulSoup(f'<p class="imagen imagen-columna"><img src="{MARCA}{rel}" alt="" loading="lazy"></p>', "html.parser")]
             return []
         estilo = estilo_de(self.reglas, el.get("data-id"))
+        alto = estilo_de(self.reglas, el.get("data-id"), " > .elementor-container").get("min-height")
+        if alto and "min-height" not in estilo:
+            estilo["min-height"] = alto
         if nivel == 0:
             caja = self.nuevo("section", class_="bloque")
             interior = self.nuevo("div", class_="ancho")
@@ -660,7 +873,7 @@ class Limpiador:
             caja = interior = self.nuevo("div", class_="grupo")
         if el.get("id"):
             caja["id"] = el["id"]
-        self.aplicar_estilo(caja, {k: v for k, v in estilo.items() if k != "text-align"})
+        self.aplicar_estilo(caja, {k: v for k, v in estilo.items() if k in ("background-color", "background-image", "color", "min-height", "--min-height")})
         self.video_fondo(el, caja)
         if fila and len(cols) > 1:
             fila_t = self.nuevo("div", class_="columnas")
@@ -696,6 +909,7 @@ def zona_contenido(soup):
 def meta_pagina(soup, cfg):
     titulo = (soup.find("meta", property="og:title") or {}).get("content") or (soup.title.string if soup.title else "")
     titulo = re.split(r"\s+[|\-–]\s+" + re.escape(cfg.get("nombre", "")), titulo or "")[0].strip()
+    titulo = re.sub(r"\s*[|\-–]\s*$", "", titulo)
     desc = (soup.find("meta", attrs={"name": "description"}) or {}).get("content") or \
            (soup.find("meta", property="og:description") or {}).get("content") or ""
     return titulo, desc.strip()
@@ -738,3 +952,41 @@ def convertir(url, zona_css=None, cfg=None):
             an.append(n)
         partes = [sec]
     return titulo, desc, lim.html(partes), sorted(set(lim.avisos))
+
+
+def datos_cabecera(soup, base_url):
+    """Logo(s), menú y redes de la cabecera de Elementor de una página."""
+    h = soup.select_one(".elementor-location-header")
+    if not h:
+        return None
+    for e in h.select(".elementor-hidden-desktop"):
+        e.decompose()
+    imgs = [mejor_src(i) for i in h.find_all("img")]
+    imgs = [i for i in dict.fromkeys(imgs) if i]
+    res = {"logo": guardar_imagen(imgs[0], base_url) if imgs else None,
+           "logo2": guardar_imagen(imgs[1], base_url) if len(imgs) > 1 else None}
+
+    def arbol(ul):
+        items = []
+        for li in ul.find_all("li", recursive=False):
+            a = li.find("a")
+            if not a:
+                continue
+            it = {"texto": a.get_text(" ", strip=True), "url": urljoin(base_url, a.get("href") or "#")}
+            sub = li.find("ul")
+            if sub:
+                it["hijos"] = arbol(sub)
+            items.append(it)
+        return items
+
+    nav = h.select_one("nav.elementor-nav-menu--main ul, nav ul, .elementor-nav-menu")
+    res["menu"] = arbol(nav) if nav else []
+    redes = []
+    for a in h.select(".elementor-social-icons-wrapper a, .elementor-widget-social-icons a"):
+        if a.get("href"):
+            redes.append({"texto": a.get_text(" ", strip=True) or a["href"], "url": a["href"]})
+    res["redes"] = redes
+    bot = h.select_one(".elementor-widget-button a")
+    if bot and bot.get_text(strip=True):
+        res["boton_cabecera"] = {"texto": bot.get_text(" ", strip=True), "url": urljoin(base_url, bot.get("href") or "#")}
+    return res
