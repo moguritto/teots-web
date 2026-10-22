@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="{{ cfg.idioma }}">
+<head>
+<meta charset="utf-8">
+{% if base_js %}
+<script>document.write('<base href="' + (location.hostname.endsWith('github.io') ? '/{{ cfg.repo }}/' : '/') + '">');</script>
+{% endif %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ titulo }}{% if not es_portada or titulo != cfg.nombre %} | {{ cfg.nombre }}{% endif %}</title>
+{% if descripcion %}
+<meta name="description" content="{{ descripcion|e }}">
+{% endif %}
+<link rel="icon" href="{{ R }}{{ cfg.favicon }}">
+{% if cfg.fuentes %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="{{ cfg.fuentes }}">
+{% endif %}
+<link rel="stylesheet" href="{{ R }}estilo.css">
+</head>
+<body class="{{ tipo }}">
+{% if tipo != "sola" %}
+<header class="cabecera">
+  <div class="ancho">
+    <a class="logo" href="{{ R }}"><img src="{{ R }}{{ cfg.logo }}" alt="{{ cfg.nombre }}"></a>
+    <input type="checkbox" id="menu-movil" class="menu-check">
+    <label for="menu-movil" class="menu-boton" aria-label="Abrir menú"><span></span></label>
+    <nav class="menu">
+      <ul>
+      {% for item in cfg.menu recursive %}
+        <li{% if item.hijos %} class="con-sub"{% endif %}><a href="{{ item.url }}">{{ item.texto }}</a>
+        {% if item.hijos %}<ul>{{ loop(item.hijos) }}</ul>{% endif %}
+        </li>
+      {% endfor %}
+      </ul>
+      {% if cfg.boton_cabecera %}
+      <a class="boton boton-cabecera" href="{{ cfg.boton_cabecera.url }}">{{ cfg.boton_cabecera.texto }}</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+{% endif %}
+<main>
+{{ contenido }}
+</main>
+{% if tipo != "sola" and pie %}
+<footer class="pie">
+<div class="ancho">
+{{ pie }}
+</div>
+</footer>
+{% endif %}
+</body>
+</html>
