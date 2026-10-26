@@ -13,3 +13,7 @@ BOTONES = ('<div class="elementor-widget-container" style="text-align:center;dis
            '<span class="elementor-button-content-wrapper"><span class="elementor-button-text">Escríbenos por correo</span></span></a></div>')
 WIDGETS = {"elementor-widget-form": BOTONES}
 SUBS = []
+LIVE_JSON = "/mnt/user-data/uploads/Downloads/teots_html_vivo.json"
+SUBS += [(r'href="\+?(?:34)?(\d{9})"', r'href="tel:+34\1"')]
+# Simply Static guardó estas imágenes sin el guion final del nombre
+SUBS += [(r'(DALL·E-2024-05-14-[^"\'()\s]*?)-\.webp', r'\1.webp')]

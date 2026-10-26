@@ -45,6 +45,7 @@ INSTAGRAM = "https://www.instagram.com/espacioteots/"
 INSTAGRAM_TXT = "Ver Espacio Teots en Instagram"
 SUBS = []
 OLD_REDIRECTS_DIR = None
+LIVE_JSON = None  # HTML descargado tal cual de la web (sin sesión); si está, manda sobre el del ZIP
 EXTRA_PAGES = []  # páginas que se añaden aparte (p. ej. textos legales de la copia anterior)
 PHONE = re.compile(r"^/[\w-]+/(?:34)?(\d{9})/?$")
 UNWANTED_SCRIPT = re.compile(r"pixelyoursite|pys[-_]|fbq\(|googletagmanager|gtag\(|google-analytics|xmlrpc", re.I)
@@ -138,7 +139,7 @@ def clean_html(html):
     html = replace_eventon(html)
     html = remove_widgets(html)
     html = re.sub(r"<script\b[^>]*insta-gallery[^>]*></script>", "", html, flags=re.I)
-    html = re.sub(r"<link\b[^>]*(?:insta-gallery|youtube-feed-pro/css/https)[^>]*>", "", html, flags=re.I)
+    html = re.sub(r"<link\b[^>]*(?:insta-gallery|youtube-feed-pro/css/(?:https|/|\.\./))[^>]*>", "", html, flags=re.I)
     for a, b in SUBS:
         html = re.sub(a, b, html, flags=re.S)
     return html
@@ -223,9 +224,18 @@ if os.path.exists(OUT):
     shutil.rmtree(OUT)
 os.makedirs(OUT)
 
+LIVE = json.load(open(LIVE_JSON, encoding="utf-8")) if LIVE_JSON else {}
+def live_norm(h):
+    for pre in ("https://", "http://", "//"):
+        h = h.replace(pre + DOMAIN + "/", "/").replace(pre.replace("/", "\\/") + DOMAIN + "\\/", "\\/")
+    return h.replace('href="https://' + DOMAIN + '"', 'href="/"')
+
 for dest, src in PAGES.items():
     f = os.path.join(SRC, src, "index.html")
-    html = open(f, encoding="utf-8").read()
+    if src in LIVE and LIVE[src].get("status") == 200:
+        html = live_norm(LIVE[src]["html"])
+    else:
+        html = open(f, encoding="utf-8").read()
     html = clean_html(html)
     html = rewrite_html(html, dest, "/" + dest)
     os.makedirs(os.path.join(OUT, dest), exist_ok=True)
