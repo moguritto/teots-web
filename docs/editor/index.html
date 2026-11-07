@@ -42,6 +42,7 @@ svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .marca svg{color:var(--accent);width:20px;height:20px}
 .selectores{display:flex;gap:8px;flex:1 1 320px;min-width:0;flex-wrap:wrap}
 .selectores select{flex:1 1 170px;min-width:0;max-width:360px}
+input.secreto{-webkit-text-security:disc;font-family:var(--mono)}
 select,input[type=text],input[type=password],input[type=search],textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:7px 10px}
 select{padding-right:28px}
 .herr{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
@@ -173,7 +174,7 @@ code{font-family:var(--mono);font-size:.85em;background:var(--bg);border-radius:
     <section class="sec" id="textos">
       <div class="sec-cab"><h2>Textos de esta página</h2><span class="chip" id="n-textos"></span></div>
       <label class="vh" for="buscar">Buscar un texto</label>
-      <input type="search" id="buscar" placeholder="Buscar un texto: teléfono, precio, fecha…" autocomplete="off">
+      <input type="search" id="buscar" name="buscar-texto" placeholder="Buscar un texto: teléfono, precio, fecha…" autocomplete="off" data-lpignore="true" data-1p-ignore data-form-type="other">
       <div id="lista"></div>
     </section>
 
@@ -194,7 +195,7 @@ code{font-family:var(--mono);font-size:.85em;background:var(--bg);border-radius:
           <li>Pulsa <b>Generate token</b> (generar token), copia el código que empieza por <code>github_pat_</code> y pégalo aquí:</li>
         </ol>
         <label class="vh" for="token">Código de acceso de GitHub</label>
-        <input type="password" id="token" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+        <input type="text" id="token" name="codigo-editor" placeholder="github_pat_…" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" class="secreto">
         <label class="check"><input type="checkbox" id="recordar" checked> Recordar en este dispositivo</label>
         <div><button type="button" class="btn primario" id="conectar">Conectar</button></div>
       </div>
