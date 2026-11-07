@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Editor de webs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Barra arriba; la página real a la izquierda y un panel vertical, sereno, a la derecha (debajo en el móvil). */
+:root{
+  --bg:#f5f5f8; --surface:#ffffff; --fg:#23222e; --muted:#6b697b; --line:#e3e1eb;
+  --accent:#6e66c4; --accent-ink:#ffffff; --accent-soft:#eceafa;
+  --ok:#2f7d55; --ok-soft:#e4f2ea; --warn:#8f6513; --warn-soft:#fbf0d8; --bad:#b03f3a; --bad-soft:#fae6e4;
+  --display:"Young Serif",Georgia,"Times New Roman",serif;
+  --body:"Figtree",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#16151d; --surface:#1f1e29; --fg:#ecebf3; --muted:#a3a1b4; --line:#33313f;
+  --accent:#aaa4ef; --accent-ink:#16151d; --accent-soft:#2b2943;
+  --ok:#7cc59c; --ok-soft:#1d3128; --warn:#e3b65c; --warn-soft:#382e18; --bad:#f08b85; --bad-soft:#3b2120;
+  color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--body);display:flex;flex-direction:column}
+a{color:var(--accent)}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.barra{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;
+  padding-block:max(10px,env(safe-area-inset-top,0px)) 10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:var(--surface);border-bottom:1px solid var(--line)}
+.marca{display:flex;align-items:center;gap:8px;font-family:var(--display);font-size:1.12rem;white-space:nowrap}
+.marca svg{color:var(--accent);width:20px;height:20px}
+.selectores{display:flex;gap:8px;flex:1 1 320px;min-width:0;flex-wrap:wrap}
+.selectores select{flex:1 1 170px;min-width:0;max-width:360px}
+select,input[type=text],input[type=password],input[type=search],textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:7px 10px}
+select{padding-right:28px}
+.herr{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;background:var(--bg);padding:2px;gap:2px}
+.seg button{border:0;background:transparent;border-radius:7px;padding:5px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--fg);box-shadow:0 0 0 1px var(--line)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:7px 13px;cursor:pointer;text-decoration:none;color:var(--fg);font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primario{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.primario:disabled{opacity:.45;cursor:default}
+.btn.suave{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.enlace{border:0;background:none;padding:0;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.estado-gh{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted)}
+.estado-gh i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.estado-gh.on i{background:var(--ok)}
+
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 390px}
+.vista-wrap{position:relative;min-height:0;display:flex;justify-content:center;padding:12px}
+.vista-wrap iframe{width:100%;height:100%;border:1px solid var(--line);border-radius:10px;background:#fff}
+.vista-wrap.movil iframe{width:390px;max-width:100%;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.cargando{position:absolute;inset:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:color-mix(in srgb,var(--bg) 86%,transparent);border-radius:10px;color:var(--muted)}
+.giro{width:28px;height:28px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:giro .9s linear infinite}
+@keyframes giro{to{transform:rotate(360deg)}}
+.panel{min-height:0;overflow:auto;background:var(--surface);border-left:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:20px}
+@media (max-width:900px){
+  body{display:block;height:auto}
+  main{display:block}
+  .vista-wrap{height:64vh;padding:8px}
+  .cargando{inset:8px}
+  .panel{border-left:0;border-top:1px solid var(--line);overflow:visible;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:max(24px,env(safe-area-inset-bottom,0px))}
+}
+h2{font-family:var(--display);font-weight:400;font-size:1.08rem;margin:0}
+.sec{display:flex;flex-direction:column;gap:10px}
+.sec-cab{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.nota{color:var(--muted);font-size:.86rem;margin:0}
+.intro{background:var(--accent-soft);border-radius:12px;padding:12px 14px;font-size:.92rem}
+.intro b{color:var(--accent)}
+.tarjeta{border:1px solid var(--accent);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.sel-cab{display:flex;justify-content:space-between;align-items:center}
+.cerrar{border:0;background:none;font-size:1.3rem;line-height:1;cursor:pointer;color:var(--muted);padding:2px 6px}
+.campo{display:flex;flex-direction:column;gap:7px}
+.campo+.campo{padding-top:12px;border-top:1px dashed var(--line)}
+.campo-cab{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;font-size:.7rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:var(--bg);border-radius:99px;padding:2px 8px}
+.chip.acento{color:var(--accent);background:var(--accent-soft)}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:.88rem;cursor:pointer}
+.check input{margin-top:3px}
+.lbl{font-size:.85rem;font-weight:600}
+.fila{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.mini-foto{max-width:100%;max-height:180px;object-fit:contain;border-radius:8px;border:1px solid var(--line);align-self:flex-start;background:var(--bg)}
+textarea{resize:vertical;min-height:38px;line-height:1.45;field-sizing:content}
+.item{display:flex;flex-direction:column;gap:5px;padding-block:9px;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item.cambiado textarea,.tarjeta textarea.cambiado{border-color:var(--warn);background:var(--warn-soft)}
+.item-cab{display:flex;gap:6px;align-items:center}
+.lista-cambios{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.lista-cambios li{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding-block:8px;border-top:1px solid var(--line);cursor:pointer}
+.lista-cambios li:first-child{border-top:0}
+.cambio-txt{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:.9rem;overflow-wrap:anywhere}
+.cambio-txt s{color:var(--muted)}
+.cambio-txt .que{font-size:.75rem;color:var(--muted);font-weight:600}
+.guardia{border:1px solid var(--warn);background:var(--warn-soft);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.pasos{margin:0;padding-left:1.25em;display:flex;flex-direction:column;gap:6px;font-size:.88rem}
+.pasos li::marker{color:var(--accent);font-weight:700}
+code{font-family:var(--mono);font-size:.85em;background:var(--bg);border-radius:5px;padding:1px 5px}
+.ok-gh{display:flex;align-items:center;gap:8px;color:var(--ok);font-weight:600}
+.avisos{position:fixed;z-index:50;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px;width:min(420px,calc(100vw - 32px))}
+.aviso{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.12);animation:entra .2s ease}
+@keyframes entra{from{transform:translateY(8px);opacity:0}}
+.aviso .ico{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:none}
+.aviso.ok .ico{background:var(--ok-soft);color:var(--ok)}
+.aviso.error .ico{background:var(--bad-soft);color:var(--bad)}
+.aviso.info .ico{background:var(--accent-soft);color:var(--accent)}
+.aviso.espera .ico{background:var(--accent-soft)}
+.aviso .ico .giro{width:16px;height:16px;border-width:2px}
+.aviso .cuerpo{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;font-size:.92rem;overflow-wrap:anywhere}
+.aviso .acciones{display:flex;gap:8px;flex-wrap:wrap}
+.aviso .acciones .btn{padding:5px 10px;font-size:.86rem}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="barra">
+  <div class="marca"><svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg><span>Editor de webs</span></div>
+  <div class="selectores">
+    <label class="vh" for="web">Web</label><select id="web"></select>
+    <label class="vh" for="pagina">Página</label><select id="pagina"></select>
+  </div>
+  <div class="herr">
+    <div class="seg" role="group" aria-label="Modo">
+      <button type="button" id="m-editar" class="on" aria-pressed="true" title="Pincha un texto para cambiarlo"><svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/></svg>Editar</button>
+      <button type="button" id="m-navegar" aria-pressed="false" title="Pincha los enlaces para ir a otras páginas"><svg class="i" viewBox="0 0 24 24"><path d="m4 4 7 16 2.5-6.5L20 11 4 4Z"/></svg>Navegar</button>
+    </div>
+    <div class="seg" role="group" aria-label="Tamaño de pantalla">
+      <button type="button" id="d-pc" class="on" aria-pressed="true" title="Ordenador"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span class="vh">Ordenador</span></button>
+      <button type="button" id="d-movil" aria-pressed="false" title="Móvil"><svg class="i" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18h2"/></svg><span class="vh">Móvil</span></button>
+    </div>
+    <a id="abrir" class="btn" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Ver en la web</a>
+    <button type="button" id="publicar" class="btn primario" disabled><svg class="i" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg><span>Publicar</span></button>
+    <span class="estado-gh" id="estado-gh"><i></i><span>Sin conectar</span></span>
+  </div>
+</header>
+
+<main>
+  <section class="vista-wrap" id="vwrap" aria-label="Vista de la página">
+    <iframe id="vista" sandbox="allow-scripts" title="Vista de la página"></iframe>
+    <div class="cargando" id="cargando"><div class="giro"></div><span id="cargando-txt">Cargando…</span></div>
+  </section>
+
+  <aside class="panel" id="panel">
+    <div class="guardia" id="guardia" hidden>
+      <div id="guardia-txt"></div>
+      <div class="fila">
+        <button type="button" class="btn primario" id="g-publicar">Publicar y seguir</button>
+        <button type="button" class="btn" id="g-descartar">Descartar y seguir</button>
+        <button type="button" class="enlace" id="g-quedar">Quedarme aquí</button>
+      </div>
+    </div>
+
+    <p class="intro" id="intro"><b>Pincha en cualquier texto de la página</b> y escribe encima. Pulsa Intro para terminar. Nada sale a internet hasta que pulses <b>Publicar</b>.</p>
+
+    <section class="tarjeta" id="sel" hidden></section>
+
+    <section class="sec" id="cambios" hidden>
+      <div class="sec-cab"><h2>Cambios sin publicar</h2><button type="button" class="enlace" id="descartar">Descartar todo</button></div>
+      <ul class="lista-cambios" id="lista-cambios"></ul>
+    </section>
+
+    <section class="sec" id="textos">
+      <div class="sec-cab"><h2>Textos de esta página</h2><span class="chip" id="n-textos"></span></div>
+      <label class="vh" for="buscar">Buscar un texto</label>
+      <input type="search" id="buscar" placeholder="Buscar un texto: teléfono, precio, fecha…" autocomplete="off">
+      <div id="lista"></div>
+    </section>
+
+    <section class="sec" id="conexion">
+      <h2>Conexión con GitHub</h2>
+      <div id="con-ok" hidden>
+        <p class="ok-gh"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg><span id="con-user">Conectado</span></p>
+        <p class="nota">Puedes publicar desde este dispositivo. El código de acceso está guardado solo en este navegador.</p>
+        <div><button type="button" class="btn" id="desconectar">Desconectar este dispositivo</button></div>
+      </div>
+      <div id="con-no" class="sec">
+        <p class="nota">Para <b>publicar</b> hay que conectar el editor con tu cuenta de GitHub, una vez en cada dispositivo. Para mirar y probar cambios no hace falta.</p>
+        <ol class="pasos">
+          <li>Abre <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a> con la sesión de <b>moguritto</b>.</li>
+          <li><b>Token name</b> (nombre): <i>Editor de webs</i>. <b>Expiration</b> (caducidad): la más larga que te deje.</li>
+          <li><b>Repository access</b> (acceso a repositorios): <b>Only select repositories</b> (solo los elegidos) y marca los cinco: espacioteots-web, teots-web, apder-web, ianivillage-web y teotsai-web.</li>
+          <li><b>Permissions</b> (permisos): añade <b>Contents</b> (contenido) con <b>Read and write</b> (lectura y escritura).</li>
+          <li>Pulsa <b>Generate token</b> (generar token), copia el código que empieza por <code>github_pat_</code> y pégalo aquí:</li>
+        </ol>
+        <label class="vh" for="token">Código de acceso de GitHub</label>
+        <input type="password" id="token" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+        <label class="check"><input type="checkbox" id="recordar" checked> Recordar en este dispositivo</label>
+        <div><button type="button" class="btn primario" id="conectar">Conectar</button></div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Cómo funciona</h2>
+      <ol class="pasos">
+        <li>Elige arriba la web y la página. Con <b>Navegar</b> puedes ir pinchando los enlaces como en la web real.</li>
+        <li>En modo <b>Editar</b>, pincha un texto, una foto o un enlace y cámbialo. También puedes buscar el texto en la lista.</li>
+        <li>Los cambios se ven al momento en amarillo. Pulsa <b>Publicar</b>: en uno o dos minutos está en internet.</li>
+      </ol>
+      <p class="nota">Si te equivocas, tras publicar aparece <b>Deshacer</b>. Además, cada cambio queda guardado en el <a id="historial" target="_blank" rel="noopener">historial de GitHub</a>. Las fotos de fondo, los colores y el diseño no se cambian aquí: pídeselo a Claude.</p>
+    </section>
+  </aside>
+</main>
+<div class="avisos" id="avisos" aria-live="polite"></div>
+
+<script>
+'use strict';
+const OWNER='moguritto';
+const WEBS=[
+  {k:'espacioteots',repo:'espacioteots-web',dom:'espacioteots.org',nombre:'Espacio TEOTS'},
+  {k:'teots',repo:'teots-web',dom:'teots.org',nombre:'TEOTS'},
+  {k:'apder',repo:'apder-web',dom:'apder.org',nombre:'APDER'},
+  {k:'ianivillage',repo:'ianivillage-web',dom:'ianivillage.com',nombre:'Iani Village'},
+  {k:'teotsai',repo:'teotsai-web',dom:'teotsai.com',nombre:'TEOTS AI'}
+];
+const NOMBRES={"apder-web":{"":"Portada","aviso-legal/":"Aviso legal","divulgation/":"Divulgation","meditacion-corazon-2026/":"Protocolo: «Meditación de corazón»","politica-de-privacidad/":"Política de privacidad","protocolo-meditacion-agosto-2024/":"Protocolo: «Taller de meditación» · Agosto 2024","terapia-asistida-mdma/":"Terapia Asistida por MDMA"},"espacioteots-web":{"":"Portada","ana-andrade/":"Ana Andrade · Terapeuta","aviso-legal/":"Aviso Legal","coworking/":"Coworking","coworking/coruna/":"Coworking · A Coruña","coworking/tarifas/":"Coworking · Tarifas","elisabet-ros/":"Elisabet Ros · Terapia Transpersonal","hayat-lanouar/":"Hayat Lanouar · Nutrición Consciente","lucia-martinez/":"Lucía Martínez · Psicología","manuel-lameiro/":"Manuel Lameiro · Psicología","mari-alves/":"Mari Alves · Masaje Relajante","maria-sonoterapia/":"María Núñez · Sonoterapia","politica-de-privacidad/":"Política de Privacidad","roberto-linares/":"Roberto Liñares","rocio-quinteiro/":"Rocío Quinteiro · Integración Emocional","salas/":"Salas","tarifas-2026-manuel/":"Tarifas 2026 · Manuel","terapias/":"Terapias","yoga-barbara-carbajal/":"Barbara Carbajal · Yoga"},"ianivillage-web":{"":"Portada","aviso-legal/":"Aviso legal","politica-de-privacidad/":"Política de privacidad"},"teots-web":{"":"Portada","contacto/":"Contacto","crisalida-patrones/":"Crisálida · Patrones","crisalida-rabia/":"Crisálida · Rabia","descarga-psico-corporal/":"Descarga Psico-corporal","eneagrama/":"Eneagrama","eneagrama/eneatipo-1/":"Eneatipo 1","eneagrama/eneatipo-2/":"Eneatipo 2","eneagrama/eneatipo-3/":"Eneatipo 3","eneagrama/eneatipo-4/":"Eneatipo 4","eneagrama/eneatipo-5/":"Eneatipo 5","eneagrama/eneatipo-6/":"Eneatipo 6","eneagrama/eneatipo-7/":"Eneatipo 7","eneagrama/eneatipo-8/":"Eneatipo 8","eneagrama/eneatipo-9/":"Eneatipo 9","expresion-corporal/":"Expresión corporal","inicio-3/aviso-legal/":"Aviso legal","inicio-3/politica-de-privacidad/":"Política de privacidad","la-importancia-de-los-habitos/":"La Importancia de los Hábitos para Transformar tu Vida","meditacion/":"Meditación","proceso-crisalida/":"Proceso Crisálida","psicologia/":"Psicología","recursos/":"Recursos","recursos/documentales/":"Documentales","recursos/documentales/crazywise/":"Crazywise","recursos/documentales/el-guion-de-tu-vida/":"El guion de tu vida","recursos/documentales/nino-divino-conversaciones-con-claudio-naranjo/":"Niño divino: Conversaciones con Claudio Naranjo","recursos/documentales/the-wisdom-of-trauma/":"The Wisdom of Trauma","recursos/documentales/viaje-interior-claudio-naranjo/":"Viaje Interior (Claudio Naranjo)","recursos/documentales/voces-de-la-tierra/":"Voces de la tierra: Claudio Naranjo","recursos/libros/":"Libros","recursos/peliculas/":"Películas","recursos/peliculas/disfrutando-cada-momento/":"Disfrutando cada momento","recursos/peliculas/el-cambio/":"El cambio","recursos/peliculas/el-guardian-de-suenos/":"El guardián de sueños","recursos/peliculas/el-guerrero-pacifico/":"El guerrero pacífico","recursos/peliculas/el-planeta-libre/":"El planeta libre","recursos/peliculas/kiriku-y-la-bruja/":"Kiriku y la bruja","recursos/peliculas/la-cabana/":"La Cabaña","recursos/peliculas/lucky/":"Lucky","recursos/peliculas/soul/":"Soul","recursos/peliculas/violines-en-el-cielo/":"Violines en el cielo","recursos/videos/":"Videos","retiro-verano-2023/":"Retiro de verano 2023","sobre-mi/":"Sobre mi","yoga/":"Yoga"},"teotsai-web":{"":"Portada","aviso-legal/":"Aviso legal","politica-de-privacidad/":"Política de privacidade"}};
+
+/* ---------- Puente: se ejecuta DENTRO de la vista (aislada), habla con el editor por mensajes ---------- */
+function puente(){
+  var P=window.parent;
+  function send(m){ m.__ed=1; try{ P.postMessage(m,'*'); }catch(e){} }
+  function mem(){ var m={}; return {getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null;},setItem:function(k,v){m[k]=String(v);},removeItem:function(k){delete m[k];},clear:function(){m={};},key:function(i){return Object.keys(m)[i]||null;},get length(){return Object.keys(m).length;}}; }
+  ['localStorage','sessionStorage'].forEach(function(n){ try{ window[n].getItem('x'); }catch(e){ try{ Object.defineProperty(window,n,{value:mem(),configurable:true}); }catch(_){} } });
+  try{ void document.cookie; }catch(e){ try{ Object.defineProperty(document,'cookie',{get:function(){return '';},set:function(){},configurable:true}); }catch(_){} }
+  var modo=window.__edModo||'editar', activo=null;
+  function norm(s){ return s.replace(/[ \t\n\r\f]+/g,' ').replace(/^ /,'').replace(/ $/,''); }
+  function aplicarModo(){ document.documentElement.classList.toggle('ed-on',modo==='editar'); }
+  function fin(){ if(!activo) return; var a=activo; activo=null; a.removeAttribute('contenteditable'); a.classList.remove('ed-activo'); send({type:'fin',frag:+a.getAttribute('data-ed')}); }
+  function editar(sp){
+    if(activo===sp) return; fin(); activo=sp; sp.classList.add('ed-activo');
+    try{ sp.contentEditable='plaintext-only'; }catch(e){}
+    if(sp.contentEditable!=='plaintext-only') sp.contentEditable='true';
+    try{ sp.focus({preventScroll:true}); }catch(e){ sp.focus(); }
+  }
+  function elem(t){ return t&&t.nodeType===1?t:(t&&t.parentElement); }
+  document.addEventListener('click',function(ev){
+    var t=elem(ev.target); if(!t||!t.closest) return;
+    var a=t.closest('a');
+    if(modo!=='editar'){ if(a){ ev.preventDefault(); send({type:'ir',href:a.href||''}); } return; }
+    ev.preventDefault(); ev.stopPropagation();
+    var sp=t.closest('[data-ed]'), img=t.closest('img[data-edi]');
+    send({type:'sel',frag:sp?+sp.getAttribute('data-ed'):null,link:(a&&a.hasAttribute('data-edl'))?+a.getAttribute('data-edl'):null,img:img?+img.getAttribute('data-edi'):null});
+    if(sp) editar(sp); else fin();
+  },true);
+  document.addEventListener('input',function(ev){
+    var t=elem(ev.target); var sp=t&&t.closest&&t.closest('[data-ed]'); if(!sp) return;
+    send({type:'texto',frag:+sp.getAttribute('data-ed'),text:norm(sp.textContent)});
+  },true);
+  document.addEventListener('keydown',function(ev){
+    if(!activo) return;
+    if(ev.key==='Enter'||ev.key==='Escape'){ ev.preventDefault(); var a=activo; fin(); try{ a.blur(); }catch(e){} }
+  },true);
+  document.addEventListener('paste',function(ev){
+    if(!activo) return; ev.preventDefault();
+    var tx=(ev.clipboardData&&ev.clipboardData.getData('text/plain'))||'';
+    document.execCommand('insertText',false,tx.replace(/[\r\n\t]+/g,' '));
+  },true);
+  document.addEventListener('focusout',function(ev){ if(activo&&ev.target===activo) fin(); },true);
+  document.addEventListener('submit',function(ev){ ev.preventDefault(); },true);
+  window.addEventListener('message',function(ev){
+    if(ev.source!==P) return; var m=ev.data; if(!m||!m.__ed) return;
+    function q(s){ return document.querySelector(s); }
+    if(m.type==='modo'){ modo=m.modo; aplicarModo(); if(modo!=='editar') fin(); }
+    else if(m.type==='texto'){ var sp=q('[data-ed="'+m.frag+'"]'); if(sp&&sp!==activo) sp.textContent=m.vis; }
+    else if(m.type==='marcas'){
+      Array.prototype.forEach.call(document.querySelectorAll('.ed-cambio'),function(e){ e.classList.remove('ed-cambio'); });
+      if(m.sel&&m.sel.length) Array.prototype.forEach.call(document.querySelectorAll(m.sel.join(',')),function(e){ e.classList.add('ed-cambio'); });
+    }
+    else if(m.type==='ver'){ var e=q(m.sel); if(e){ e.scrollIntoView({block:'center',behavior:'smooth'}); e.classList.remove('ed-flash'); void e.offsetWidth; e.classList.add('ed-flash'); } }
+    else if(m.type==='img'){ var im=q('img[data-edi="'+m.k+'"]'); if(im){ im.removeAttribute('srcset'); im.removeAttribute('sizes'); im.removeAttribute('loading'); im.src=m.src; } }
+  });
+  var tsc=0;
+  window.addEventListener('scroll',function(){ if(tsc) return; tsc=setTimeout(function(){ tsc=0; send({type:'scroll',y:Math.round(window.scrollY)}); },250); },{passive:true});
+  document.addEventListener('DOMContentLoaded',function(){ aplicarModo(); send({type:'listo'}); });
+  window.addEventListener('load',function(){ if(window.__edY) window.scrollTo(0,window.__edY); });
+}
+const PUENTE='('+puente.toString()+')();';
+const CSS_VISTA='html.ed-on [data-ed]{cursor:text;border-radius:2px}'+
+ 'html.ed-on [data-ed]:hover{outline:1.5px dashed rgba(110,102,196,.85);outline-offset:2px}'+
+ 'html.ed-on img[data-edi]:hover{outline:2px dashed rgba(110,102,196,.85);outline-offset:2px;cursor:pointer}'+
+ '[data-ed].ed-activo{outline:2px solid #6e66c4!important;outline-offset:2px;background-color:rgba(110,102,196,.12)}'+
+ '.ed-cambio{background-color:rgba(255,205,86,.42)!important;box-shadow:0 0 0 2px rgba(255,205,86,.42)}'+
+ 'img.ed-cambio{outline:3px solid rgba(240,180,40,.95);outline-offset:2px}'+
+ '.ed-flash{animation:edflash 1.4s ease}@keyframes edflash{0%,100%{box-shadow:0 0 0 0 rgba(110,102,196,0)}25%{box-shadow:0 0 0 7px rgba(110,102,196,.45)}}'+
+ '.elementor-invisible{visibility:visible!important}';
+
+/* ---------- Utilidades ---------- */
+const $=s=>document.querySelector(s);
+const vista=$('#vista'), selWeb=$('#web'), selPag=$('#pagina');
+const _ta=document.createElement('textarea');
+function dec(s){ if(s.indexOf('&')<0) return s; _ta.innerHTML=s; return _ta.value; }
+function norm(s){ return s.replace(/[ \t\n\r\f]+/g,' ').replace(/^ /,'').replace(/ $/,''); }
+function encTexto(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/ /g,'&nbsp;'); }
+function encAttr(v,q){ v=v.replace(/&/g,'&amp;'); return q==="'"?v.replace(/'/g,'&#39;'):v.replace(/"/g,'&quot;'); }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function plano(s){ return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+function corto(s,n){ s=String(s).replace(/ /g,' '); n=n||70; return s.length>n?s.slice(0,n-1)+'…':s; }
+const DEC=new TextDecoder('utf-8',{ignoreBOM:true}), ENC=new TextEncoder();
+function b64ABytes(b){ const bin=atob(b.replace(/\s+/g,'')); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; }
+function bytesAB64(u){ let s=''; for(let i=0;i<u.length;i+=0x8000) s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000)); return btoa(s); }
+const espera=ms=>new Promise(r=>setTimeout(r,ms));
+function encPath(p){ return p.split('/').map(encodeURIComponent).join('/'); }
+
+/* ---------- Lectura del HTML: textos, enlaces y fotos con su posición exacta ---------- */
+const VACIOS=new Set('area base br col embed hr img input link meta source track wbr param keygen'.split(' '));
+const CRUDOS=new Set('script style textarea title noscript template xmp iframe noembed noframes'.split(' '));
+const CIERRAN_P=new Set('address article aside blockquote details div dl fieldset figcaption figure footer form h1 h2 h3 h4 h5 h6 header hr main menu nav ol p pre section table ul'.split(' '));
+function contexto(pila){
+  let tipo='Texto', zona='';
+  for(let k=pila.length-1;k>=0;k--){
+    const x=pila[k];
+    if(tipo==='Texto'){
+      if(/^h[1-6]$/.test(x.n)) tipo='Título';
+      else if(x.n==='button'||(x.n==='a'&&/button|btn/.test(x.c))) tipo='Botón';
+      else if(x.n==='a') tipo='Enlace';
+      else if(x.n==='li') tipo='Lista';
+      else if(x.n==='td'||x.n==='th') tipo='Tabla';
+      else if(x.n==='figcaption') tipo='Pie de foto';
+      else if(x.n==='blockquote') tipo='Cita';
+    }
+    if(!zona){
+      if(x.n==='nav') zona='Menú';
+      else if(x.n==='header'||/elementor-location-header/.test(x.c)) zona='Cabecera';
+      else if(x.n==='footer'||/elementor-location-footer/.test(x.c)) zona='Pie de página';
+    }
+  }
+  return {tipo,zona};
+}
+function analizar(S){
+  const n=S.length, frags=[], links=[], imgs=[], pila=[];
+  let i=0, t=0, enBody=false, svg=0, sel=0, headIns=-1;
+  const texto=(a,b)=>{
+    if(a>=b||!enBody||svg||sel) return;
+    const raw=S.slice(a,b);
+    if(!/[^ \t\n\r\f]/.test(raw)) return;
+    const d=dec(raw);
+    if(!/[^\s ​﻿]/.test(d)) return;
+    const lead=raw.match(/^[ \t\n\r\f]*/)[0], trail=raw.slice(lead.length).match(/[ \t\n\r\f]*$/)[0];
+    frags.push({i:frags.length,s:a,e:b,raw,lead,trail,text:norm(d),ctx:contexto(pila)});
+  };
+  while(true){
+    const lt=S.indexOf('<',i);
+    if(lt<0){ texto(t,n); break; }
+    if(S.startsWith('<!--',lt)){ texto(t,lt); const e=S.indexOf('-->',lt+4); i=t=(e<0?n:e+3); continue; }
+    const nx=S.charAt(lt+1);
+    if(nx==='!'||nx==='?'){ texto(t,lt); const e=S.indexOf('>',lt); i=t=(e<0?n:e+1); continue; }
+    const cierre=nx==='/';
+    const ns=lt+(cierre?2:1);
+    if(!/[A-Za-z]/.test(S.charAt(ns))){ i=lt+1; continue; }
+    let p=ns; while(p<n&&!/[\s\/>]/.test(S.charAt(p))) p++;
+    const nombre=S.slice(ns,p).toLowerCase();
+    texto(t,lt);
+    if(cierre){
+      const e=S.indexOf('>',p); i=t=(e<0?n:e+1);
+      if(svg){ if(nombre==='svg'||nombre==='math') svg--; continue; }
+      if(nombre==='select'&&sel>0) sel--;
+      if(nombre==='body') enBody=false;
+      for(let k=pila.length-1;k>=0;k--){ if(pila[k].n===nombre){ pila.length=k; break; } }
+      continue;
+    }
+    const attrs=new Map(); let q=p, auto=false;
+    while(q<n){
+      const ws=q;
+      while(q<n&&/\s/.test(S.charAt(q))) q++;
+      const c=S.charAt(q);
+      if(q>=n) break;
+      if(c==='>'){ q++; break; }
+      if(c==='/'){ if(S.charAt(q+1)==='>'){ auto=true; q+=2; break; } q++; continue; }
+      const an=q; while(q<n&&!/[\s\/>=]/.test(S.charAt(q))) q++;
+      if(q===an){ q++; continue; }
+      const at={name:S.slice(an,q).toLowerCase(),ws,ns:an,vs:-1,ve:-1,quoted:false,q:'',end:q,value:''};
+      let r=q; while(r<n&&/\s/.test(S.charAt(r))) r++;
+      if(S.charAt(r)==='='){
+        r++; while(r<n&&/\s/.test(S.charAt(r))) r++;
+        const qc=S.charAt(r);
+        if(qc==='"'||qc==="'"){ at.quoted=true; at.q=qc; at.vs=r+1; let e=S.indexOf(qc,r+1); if(e<0) e=n; at.ve=e; at.end=Math.min(n,e+1); q=at.end; }
+        else{ at.vs=r; while(r<n&&!/[\s>]/.test(S.charAt(r))) r++; at.ve=r; at.end=r; q=r; }
+        at.value=S.slice(at.vs,at.ve);
+      }
+      if(!attrs.has(at.name)) attrs.set(at.name,at);
+    }
+    const fin=q; i=t=fin;
+    if(svg){ if((nombre==='svg'||nombre==='math')&&!auto) svg++; continue; }
+    if(nombre==='svg'||nombre==='math'){ if(!auto) svg++; continue; }
+    if(nombre==='head'&&headIns<0) headIns=fin;
+    if(nombre==='body') enBody=true;
+    if(nombre==='select') sel++;
+    if(CRUDOS.has(nombre)){
+      const re=new RegExp('</'+nombre+'(?=[\\s>/])','ig'); re.lastIndex=fin; const m=re.exec(S);
+      const e=m?S.indexOf('>',m.index):-1; i=t=(e<0?n:e+1);
+      continue;
+    }
+    if(enBody){
+      if(nombre==='a') links.push({k:links.length,s:lt,e:fin,nameEnd:p,attrs,href:attrs.get('href')||null});
+      else if(nombre==='img') imgs.push({k:imgs.length,s:lt,e:fin,nameEnd:p,attrs});
+    }
+    if(!VACIOS.has(nombre)&&!auto){
+      if(CIERRAN_P.has(nombre)&&pila.length&&pila[pila.length-1].n==='p') pila.pop();
+      if(nombre==='li'&&pila.length&&pila[pila.length-1].n==='li') pila.pop();
+      const cl=attrs.get('class');
+      pila.push({n:nombre,c:cl?cl.value:''});
+    }
+  }
+  return {frags,links,imgs,headIns,baseEscrita:/document\.write\(\s*['"]<base/i.test(S)};
+}
+function aplicar(S,R){
+  const L=R.slice().sort((x,y)=>(y.s-x.s)||(y.e-x.e));
+  let out=S, limite=Infinity;
+  for(const r of L){
+    if(r.e>limite) throw new Error('Dos cambios se pisan en el mismo sitio. Publica uno y luego el otro.');
+    out=out.slice(0,r.s)+r.txt+out.slice(r.e); limite=r.s;
+  }
+  return out;
+}
+function attrRep(a,valor){ const q=a.q||'"'; const v=encAttr(valor,q); return a.quoted?{s:a.vs,e:a.ve,txt:v}:{s:a.vs,e:a.ve,txt:q+v+q}; }
+function hrefDe(L){ return L.href?dec(L.href.value):''; }
+
+/* ---------- Estado ---------- */
+const st={web:null,ruta:'',path:'',sha:'',src:'',an:null,
+  edits:new Map(),glob:new Set(),globManual:new Map(),linkEdits:new Map(),linkGlob:new Set(),altEdits:new Map(),imgEdits:new Map(),
+  sel:null,modo:'editar',scrollY:0,ultimo:null,ocupado:false,carga:0};
+const CLAVE='editorWebs.token';
+function leerToken(){ try{ return localStorage.getItem(CLAVE)||sessionStorage.getItem(CLAVE)||''; }catch(e){ return ''; } }
+function guardarToken(tk,recordar){ try{ localStorage.removeItem(CLAVE); sessionStorage.removeItem(CLAVE); if(tk) (recordar?localStorage:sessionStorage).setItem(CLAVE,tk); }catch(e){} }
+let token=leerToken();
+function nCambios(){ return st.edits.size+st.linkEdits.size+st.altEdits.size+st.imgEdits.size; }
+function hayCambios(){ return nCambios()>0; }
+
+/* ---------- GitHub ---------- */
+class ErrorGH extends Error{ constructor(m,status,datos){ super(m); this.status=status; this.datos=datos; } }
+function mensajeError(s,j,ruta){
+  const msg=(j&&j.message)||'';
+  if(s===401) return 'GitHub no acepta el código de acceso (puede haber caducado). Vuelve a conectar el editor abajo, en «Conexión con GitHub».';
+  if(s===403&&/rate limit/i.test(msg)) return token?'GitHub ha frenado las consultas un momento. Espera un minuto y vuelve a intentarlo.':'GitHub limita las consultas cuando el editor no está conectado. Conéctalo abajo, en «Conexión con GitHub», y vuelve a intentarlo.';
+  if(s===403||(s===404&&token&&/\/git\/(blobs|trees|commits|refs)/.test(ruta))) return 'El código de acceso no tiene permiso para escribir en esta web. Al crearlo, marca su repositorio y el permiso «Contents: Read and write».';
+  if(s===404) return 'No encuentro esa página en GitHub. Puede que se haya movido o borrado.';
+  if(s===409) return 'La web ha cambiado mientras editabas.';
+  if(s===422) return 'GitHub no ha aceptado el cambio ('+msg+').';
+  return 'GitHub ha respondido con un error ('+s+(msg?': '+msg:'')+').';
+}
+async function gh(ruta,op){
+  op=op||{};
+  const h={'Accept':'application/vnd.github+json'};
+  if(token) h.Authorization='Bearer '+token;
+  if(op.body) h['Content-Type']='application/json';
+  let r;
+  try{ r=await fetch('https://api.github.com'+ruta,{method:op.method||'GET',headers:h,body:op.body,cache:'no-store'}); }
+  catch(e){ throw new ErrorGH('No hay conexión con GitHub. Revisa internet y vuelve a intentarlo.',0); }
+  if(r.status===204) return null;
+  let j=null; try{ j=await r.json(); }catch(e){}
+  if(!r.ok) throw new ErrorGH(mensajeError(r.status,j,ruta),r.status,j);
+  return j;
+}
+const api=(web,resto)=>`/repos/${OWNER}/${web.repo}${resto}`;
+async function leerBlob(web,sha){ const b=await gh(api(web,`/git/blobs/${sha}`)); return b64ABytes(b.content); }
+async function leerArchivo(web,path,ref){
+  const j=await gh(api(web,`/contents/${encPath(path)}?ref=${encodeURIComponent(ref||'main')}`));
+  const bytes=(j.content&&j.encoding==='base64')?b64ABytes(j.content):await leerBlob(web,j.sha);
+  return {sha:j.sha,texto:DEC.decode(bytes)};
+}
+
+/* ---------- Páginas de cada web ---------- */
+function esPagina(p){ return /^docs\/(.+\/)?index\.html$/.test(p)&&!/\/(wp-content|wp-includes|wp-json|feed|editor|_rev)\//.test('/'+p); }
+function rutaDe(p){ return p.replace(/^docs\//,'').replace(/index\.html$/,''); }
+function pathDe(ruta){ return 'docs/'+ruta+'index.html'; }
+function nombrePagina(web,ruta){
+  const n=(NOMBRES[web.repo]||{})[ruta]; if(n) return n;
+  if(!ruta) return 'Portada';
+  const u=ruta.replace(/\/$/,'').split('/').pop().replace(/-/g,' ');
+  return u.charAt(0).toUpperCase()+u.slice(1);
+}
+async function cargarPaginas(web){
+  if(web.paginas) return;
+  try{
+    const j=await gh(api(web,'/git/trees/main?recursive=1'));
+    const dirs=new Set(j.tree.filter(e=>e.type==='tree').map(e=>e.path));
+    web.subidas=dirs.has('docs/wp-content/uploads')?'wp-content/uploads/editor':(dirs.has('docs/img')?'img/editor':'fotos-editor');
+    web.paginas=j.tree.filter(e=>e.type==='blob'&&esPagina(e.path)&&e.size>1500).map(e=>rutaDe(e.path));
+  }catch(e){
+    web.paginas=Object.keys(NOMBRES[web.repo]||{'':'Portada'});
+    web.subidas=web.repo==='teotsai-web'?'img/editor':'wp-content/uploads/editor';
+    aviso('info','No he podido leer la lista de páginas de GitHub; uso la última conocida. '+e.message);
+  }
+  web.paginas.sort((a,b)=>a===''?-1:b===''?1:nombrePagina(web,a).localeCompare(nombrePagina(web,b),'es'));
+}
+function pintarSelectores(){
+  selWeb.innerHTML=WEBS.map(w=>`<option value="${w.k}">${esc(w.nombre)} · ${esc(w.dom)}</option>`).join('');
+}
+function pintarPaginas(){
+  const w=st.web; if(!w) return;
+  selWeb.value=w.k;
+  const lista=(w.paginas||[]).slice();
+  if(!lista.includes(st.ruta)) lista.unshift(st.ruta);
+  selPag.innerHTML=lista.map(r=>`<option value="${esc(r)}">${esc(nombrePagina(w,r))}</option>`).join('');
+  selPag.value=st.ruta;
+  $('#abrir').href=`https://${w.dom}/${st.ruta}`;
+  $('#historial').href=`https://github.com/${OWNER}/${w.repo}/commits/main`;
+}
+
+/* ---------- Navegación ---------- */
+function leerHash(){
+  const h=decodeURIComponent(location.hash.replace(/^#/,''));
+  const k=h.split('/')[0];
+  const web=WEBS.find(w=>w.k===k);
+  if(!web) return {web:WEBS[0],ruta:''};
+  let ruta=h.slice(k.length+1).replace(/^\/+/,'');
+  if(ruta&&!ruta.endsWith('/')) ruta+='/';
+  return {web,ruta};
+}
+function ponerHash(web,ruta){
+  const h='#'+web.k+'/'+ruta;
+  if(location.hash===h) abrir(web,ruta); else location.hash=h;
+}
+let pendiente=null;
+function pedirNavegar(web,ruta){
+  if(web===st.web&&ruta===st.ruta) return;
+  if(hayCambios()){ mostrarGuardia(()=>ponerHash(web,ruta)); pintarPaginas(); return; }
+  ponerHash(web,ruta);
+}
+function mostrarGuardia(seguir){
+  pendiente=seguir;
+  const n=nCambios();
+  $('#guardia-txt').innerHTML=`Tienes <b>${n} ${n>1?'cambios':'cambio'} sin publicar</b> en esta página. ¿Qué hago con ${n>1?'ellos':'él'}?`;
+  $('#guardia').hidden=false;
+  $('#guardia').scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+function ocultarGuardia(){ $('#guardia').hidden=true; pendiente=null; }
+window.addEventListener('hashchange',()=>{
+  const {web,ruta}=leerHash();
+  if(web===st.web&&ruta===st.ruta) return;
+  if(hayCambios()){
+    history.replaceState(null,'','#'+st.web.k+'/'+st.ruta);
+    mostrarGuardia(()=>ponerHash(web,ruta));
+    return;
+  }
+  abrir(web,ruta);
+});
+window.addEventListener('beforeunload',e=>{ if(hayCambios()){ e.preventDefault(); e.returnValue=''; } });
+
+async function abrir(web,ruta){
+  ocultarGuardia();
+  const id=++st.carga;
+  mostrarCargando('Cargando la página…');
+  st.web=web; st.ruta=ruta;
+  await cargarPaginas(web);
+  if(id!==st.carga) return;
+  pintarPaginas();
+  try{
+    const path=pathDe(ruta);
+    const r=await leerArchivo(web,path,'main');
+    if(id!==st.carga) return;
+    Object.assign(st,{path,sha:r.sha,src:r.texto,scrollY:0,sel:null});
+    limpiarCambios();
+    st.an=analizar(st.src);
+    pintarTodo();
+    recargarVista();
+  }catch(e){
+    if(id!==st.carga) return;
+    ocultarCargando();
+    st.an=null; st.src='';
+    $('#lista').innerHTML='';
+    aviso('error',e.message);
+  }
+}
+
+/* ---------- Vista ---------- */
+let tCarga=0;
+function mostrarCargando(t){ $('#cargando-txt').textContent=t; $('#cargando').hidden=false; clearTimeout(tCarga); tCarga=setTimeout(ocultarCargando,20000); }
+function ocultarCargando(){ $('#cargando').hidden=true; clearTimeout(tCarga); }
+function construirVista(){
+  const S=st.src, an=st.an, ins=[];
+  for(const f of an.frags){
+    const v=st.edits.has(f.i)?f.lead+encTexto(st.edits.get(f.i))+f.trail:f.raw;
+    ins.push({s:f.s,e:f.e,txt:`<span data-ed="${f.i}">${v}</span>`});
+  }
+  for(const L of an.links) ins.push({s:L.nameEnd,e:L.nameEnd,txt:` data-edl="${L.k}"`});
+  for(const I of an.imgs) ins.push({s:I.nameEnd,e:I.nameEnd,txt:` data-edi="${I.k}"`});
+  const base=`https://${st.web.dom}/${st.ruta}`.replace(/"/g,'%22');
+  const cabeza=`<base href="${base}"><script>window.__edY=${st.scrollY|0};window.__edModo=${JSON.stringify(st.modo)};${PUENTE}<\/script><style>${CSS_VISTA}</style>`;
+  if(an.headIns>=0) ins.push({s:an.headIns,e:an.headIns,txt:cabeza});
+  else{ const m=/<html[^>]*>/i.exec(S); const pos=m?m.index+m[0].length:0; ins.push({s:pos,e:pos,txt:'<head>'+cabeza+'</head>'}); }
+  return aplicar(S,ins);
+}
+function recargarVista(){
+  if(!st.an) return;
+  mostrarCargando('Preparando la vista…');
+  vista.srcdoc=construirVista();
+}
+function enviar(m){ m.__ed=1; try{ vista.contentWindow.postMessage(m,'*'); }catch(e){} }
+function selectoresCambio(){
+  const s=[];
+  for(const i of st.edits.keys()){
+    s.push(`[data-ed="${i}"]`);
+    if(st.glob.has(i)){ const f0=st.an.frags[i]; for(const f of st.an.frags) if(f.i!==i&&copia(f,f0)) s.push(`[data-ed="${f.i}"]`); }
+  }
+  for(const k of st.linkEdits.keys()) s.push(`a[data-edl="${k}"]`);
+  for(const k of st.altEdits.keys()) s.push(`img[data-edi="${k}"]`);
+  for(const k of st.imgEdits.keys()) s.push(`img[data-edi="${k}"]`);
+  return s;
+}
+function marcarVista(){ enviar({type:'marcas',sel:selectoresCambio()}); }
+window.addEventListener('message',ev=>{
+  if(ev.source!==vista.contentWindow) return;
+  const m=ev.data; if(!m||!m.__ed) return;
+  if(m.type==='listo'){
+    ocultarCargando(); enviar({type:'modo',modo:st.modo}); marcarVista();
+    for(const [k,im] of st.imgEdits) enviar({type:'img',k,src:im.dataURL});
+  }
+  else if(m.type==='sel'){ st.sel={frag:m.frag,link:m.link,img:m.img}; pintarSeleccion(); if(m.frag==null&&window.matchMedia('(max-width:900px)').matches) $('#sel').scrollIntoView({block:'start',behavior:'smooth'}); }
+  else if(m.type==='texto'){ if(st.an&&st.an.frags[m.frag]) cambiarTexto(m.frag,m.text,'vista'); }
+  else if(m.type==='ir'){ irA(m.href); }
+  else if(m.type==='scroll'){ st.scrollY=m.y; }
+});
+function irA(href){
+  let u; try{ u=new URL(href); }catch(e){ return; }
+  const host=u.hostname.replace(/^www\./,'');
+  const web=WEBS.find(w=>w.dom===host);
+  if(!web||!/^https?:$/.test(u.protocol)){ aviso('info','Ese enlace lleva fuera de tus webs.',[{t:'Abrirlo en otra pestaña',href:u.href}]); return; }
+  let ruta=decodeURIComponent(u.pathname).replace(/^\/+/,'').replace(/index\.html$/,'');
+  if(ruta&&!ruta.endsWith('/')){
+    if(/\.[a-z0-9]{2,5}$/i.test(ruta)){ aviso('info','Ese enlace abre un archivo, no una página.',[{t:'Abrirlo',href:u.href}]); return; }
+    ruta+='/';
+  }
+  if(web.paginas&&!web.paginas.includes(ruta)){ aviso('info','Esa dirección no es una página editable (es una redirección o no existe).',[{t:'Abrirla en la web',href:u.href}]); return; }
+  pedirNavegar(web,ruta);
+}
+
+/* ---------- Edición ---------- */
+function limpiarCambios(){
+  st.edits.clear(); st.glob.clear(); st.globManual.clear(); st.linkEdits.clear(); st.linkGlob.clear(); st.altEdits.clear(); st.imgEdits.clear();
+}
+function visDe(f,v){ return f.lead+v+f.trail; }
+/* Una «copia» es el mismo texto en la misma zona (menú, cabecera o pie); en el cuerpo, el mismo texto en cualquier sitio. */
+function copia(f,g0){ return f.text===g0.text&&(!g0.ctx.zona||f.ctx.zona===g0.ctx.zona); }
+function cambiarTexto(i,valor,origen){
+  const f=st.an.frags[i]; if(!f) return;
+  const v=norm(valor);
+  if(v===f.text){ st.edits.delete(i); st.glob.delete(i); }
+  else{
+    st.edits.set(i,v);
+    if(!st.globManual.has(i)&&f.ctx.zona) st.glob.add(i);
+  }
+  if(origen!=='vista') enviar({type:'texto',frag:i,vis:st.edits.has(i)?visDe(f,v):dec(f.raw)});
+  for(const g of st.an.frags) if(g.i!==i&&copia(g,f)&&!st.edits.has(g.i)) enviar({type:'texto',frag:g.i,vis:st.glob.has(i)?visDe(g,v):dec(g.raw)});
+  sincronizarCampos(i,origen);
+  actualizarCambios();
+}
+function quitarTexto(i){
+  const f=st.an.frags[i]; const eraGlob=st.glob.has(i);
+  st.edits.delete(i); st.glob.delete(i); st.globManual.delete(i);
+  enviar({type:'texto',frag:i,vis:dec(f.raw)});
+  if(eraGlob) for(const g of st.an.frags) if(copia(g,f)&&!st.edits.has(g.i)) enviar({type:'texto',frag:g.i,vis:dec(g.raw)});
+  sincronizarCampos(i,'quitar'); actualizarCambios(); pintarSeleccion();
+}
+function sincronizarCampos(i,origen){
+  const f=st.an.frags[i]; const val=st.edits.has(i)?st.edits.get(i):f.text;
+  document.querySelectorAll(`textarea[data-frag="${i}"]`).forEach(ta=>{
+    if(document.activeElement!==ta||origen==='quitar') ta.value=val;
+    ta.classList.toggle('cambiado',st.edits.has(i));
+    const it=ta.closest('.item'); if(it) it.classList.toggle('cambiado',st.edits.has(i));
+    autoAlto(ta);
+  });
+  const g=$('#sel-glob'); if(g&&st.sel&&st.sel.frag===i){ g.disabled=!st.edits.has(i); g.checked=st.glob.has(i); }
+  const d=$('#sel-dups-wrap'); if(d&&st.sel&&st.sel.frag===i) d.hidden=!st.edits.has(i);
+}
+function autoAlto(ta){ if(CSS.supports&&CSS.supports('field-sizing','content')) return; ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight+2,320)+'px'; }
+
+function describirEnlace(h){
+  if(!h) return 'Sin dirección.';
+  if(/^tel:/i.test(h)) return 'Llama al '+h.replace(/^tel:/i,'');
+  if(/^mailto:/i.test(h)) return 'Abre un correo a '+h.replace(/^mailto:/i,'').split('?')[0];
+  if(/wa\.me|whatsapp\.com/i.test(h)) return 'Abre WhatsApp';
+  if(h.charAt(0)==='#') return 'Salta a una sección de esta misma página';
+  try{ const u=new URL(h,`https://${st.web.dom}/${st.ruta}`); if(u.hostname.replace(/^www\./,'')===st.web.dom) return 'Página de esta web: '+(u.pathname||'/'); return 'Abre '+u.hostname; }catch(e){ return ''; }
+}
+function urlAbs(rel){ try{ return new URL(rel,`https://${st.web.dom}/${st.ruta}`).href; }catch(e){ return rel; } }
+
+function pintarSeleccion(){
+  const box=$('#sel'), s=st.sel;
+  if(!st.an||!s||(s.frag==null&&s.link==null&&s.img==null)){ box.hidden=true; box.innerHTML=''; $('#intro').hidden=false; return; }
+  $('#intro').hidden=true;
+  let h='<div class="sel-cab"><h2>Lo que has pinchado</h2><button type="button" class="cerrar" id="sel-cerrar" aria-label="Cerrar">×</button></div>';
+  if(s.frag!=null){
+    const f=st.an.frags[s.frag]; const val=st.edits.has(f.i)?st.edits.get(f.i):f.text;
+    const dups=st.an.frags.filter(g=>g.text===f.text&&g.i!==f.i).length;
+    h+=`<div class="campo"><div class="campo-cab"><span class="chip acento">${esc(f.ctx.tipo)}</span>${f.ctx.zona?`<span class="chip">${esc(f.ctx.zona)}</span>`:''}</div>
+      <label class="vh" for="sel-texto">Texto</label><textarea id="sel-texto" data-frag="${f.i}" class="${st.edits.has(f.i)?'cambiado':''}" rows="3">${esc(val)}</textarea>
+      ${dups?`<p class="nota" id="sel-dups-wrap"${st.edits.has(f.i)?'':' hidden'}>Este texto aparece ${dups+1} veces en esta página. <button type="button" class="enlace" id="sel-dups">Cambiar también ${dups>1?'las otras '+dups:'la otra'}</button></p>`:''}
+      <label class="check"><input type="checkbox" id="sel-glob" ${st.glob.has(f.i)?'checked':''} ${st.edits.has(f.i)?'':'disabled'}> Cambiarlo también en las demás páginas de ${esc(st.web.dom)} donde aparezca igual</label></div>`;
+  }
+  if(s.link!=null){
+    const L=st.an.links[s.link]; const orig=hrefDe(L); const val=st.linkEdits.has(L.k)?st.linkEdits.get(L.k):orig;
+    h+=`<div class="campo"><div class="campo-cab"><span class="chip acento">Enlace</span></div>
+      <label class="lbl" for="sel-enlace">Adónde lleva</label>
+      <input type="text" id="sel-enlace" value="${esc(val)}" spellcheck="false" autocomplete="off" autocapitalize="off">
+      <p class="nota" id="sel-enlace-desc">${esc(describirEnlace(val))}</p>
+      <label class="check"><input type="checkbox" id="sel-lglob" ${st.linkGlob.has(L.k)?'checked':''} ${st.linkEdits.has(L.k)?'':'disabled'}> Cambiar este enlace en todas las páginas de ${esc(st.web.dom)}</label></div>`;
+  }
+  if(s.img!=null){
+    const I=st.an.imgs[s.img]; const ed=st.imgEdits.get(I.k);
+    const src=I.attrs.get('src')?dec(I.attrs.get('src').value):'';
+    const altO=I.attrs.get('alt')?dec(I.attrs.get('alt').value):''; const altV=st.altEdits.has(I.k)?st.altEdits.get(I.k):altO;
+    h+=`<div class="campo"><div class="campo-cab"><span class="chip acento">Foto</span></div>
+      <img class="mini-foto" src="${esc(ed?ed.dataURL:urlAbs(src))}" alt="">
+      <div class="fila"><label class="btn suave" for="sel-file">Cambiar foto…</label><input type="file" id="sel-file" accept="image/*" hidden>${ed?'<button type="button" class="enlace" id="sel-img-quitar">Volver a la original</button>':''}</div>
+      <label class="lbl" for="sel-alt">Descripción de la foto</label>
+      <input type="text" id="sel-alt" value="${esc(altV)}" autocomplete="off">
+      <p class="nota">La leen Google y las personas que usan lector de pantalla.</p></div>`;
+  }
+  box.innerHTML=h; box.hidden=false;
+  $('#sel-cerrar').onclick=()=>{ st.sel=null; pintarSeleccion(); };
+  const ta=$('#sel-texto');
+  if(ta){
+    autoAlto(ta);
+    ta.addEventListener('input',()=>{ cambiarTexto(+ta.dataset.frag,ta.value,'tarjeta'); autoAlto(ta); });
+    ta.addEventListener('focus',()=>verEnVista(`[data-ed="${ta.dataset.frag}"]`));
+    const g=$('#sel-glob'); g.onchange=()=>{ const i=+ta.dataset.frag; st.globManual.set(i,g.checked); if(g.checked) st.glob.add(i); else st.glob.delete(i); cambiarTexto(i,ta.value,'tarjeta'); };
+    const d=$('#sel-dups'); if(d) d.onclick=()=>{ const i=+ta.dataset.frag; const f=st.an.frags[i]; const v=st.edits.get(i); if(v==null) return; for(const g2 of st.an.frags) if(g2.i!==i&&g2.text===f.text) cambiarTexto(g2.i,v,'tarjeta'); aviso('ok','Cambiado también en las otras copias de esta página.'); };
+  }
+  const en=$('#sel-enlace');
+  if(en){
+    const k=st.sel.link; const orig=hrefDe(st.an.links[k]);
+    en.addEventListener('input',()=>{ const v=en.value.trim(); if(v===orig){ st.linkEdits.delete(k); st.linkGlob.delete(k); } else st.linkEdits.set(k,v); $('#sel-enlace-desc').textContent=describirEnlace(v); const lg=$('#sel-lglob'); lg.disabled=!st.linkEdits.has(k); lg.checked=st.linkGlob.has(k); actualizarCambios(); });
+    $('#sel-lglob').onchange=e=>{ if(e.target.checked) st.linkGlob.add(k); else st.linkGlob.delete(k); actualizarCambios(); };
+  }
+  const al=$('#sel-alt');
+  if(al){
+    const k=st.sel.img; const I=st.an.imgs[k]; const altO=I.attrs.get('alt')?dec(I.attrs.get('alt').value):'';
+    al.addEventListener('input',()=>{ const v=al.value.trim(); if(v===altO) st.altEdits.delete(k); else st.altEdits.set(k,v); actualizarCambios(); });
+    $('#sel-file').onchange=e=>{ const fl=e.target.files&&e.target.files[0]; if(fl) elegirFoto(k,fl); };
+    const qx=$('#sel-img-quitar'); if(qx) qx.onclick=()=>{ st.imgEdits.delete(k); actualizarCambios(); pintarSeleccion(); recargarVista(); };
+  }
+}
+function verEnVista(sel){ enviar({type:'ver',sel}); }
+
+/* ---------- Fotos ---------- */
+function slug(s){ return plano(s).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'foto'; }
+function sello(){ const d=new Date(), z=x=>String(x).padStart(2,'0'); return `${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`; }
+function cargarImagen(file){ return new Promise((ok,mal)=>{ const u=URL.createObjectURL(file); const im=new Image(); im.onload=()=>{ ok(im); }; im.onerror=()=>{ URL.revokeObjectURL(u); mal(new Error('No puedo leer esa foto. Prueba con un JPG o un PNG.')); }; im.src=u; }); }
+async function elegirFoto(k,file){
+  try{
+    if(file.size>40*1024*1024) throw new Error('La foto pesa demasiado (más de 40 MB).');
+    const transp=/png|gif|webp/i.test(file.type);
+    const im=await cargarImagen(file);
+    const w0=im.naturalWidth,h0=im.naturalHeight, f=Math.min(1,1600/Math.max(w0,h0));
+    const w=Math.max(1,Math.round(w0*f)),h=Math.max(1,Math.round(h0*f));
+    const c=document.createElement('canvas'); c.width=w; c.height=h;
+    const x=c.getContext('2d'); if(!transp){ x.fillStyle='#fff'; x.fillRect(0,0,w,h); } x.drawImage(im,0,0,w,h);
+    const tipo=transp?'image/png':'image/jpeg', ext=transp?'png':'jpg';
+    const blob=await new Promise(r=>c.toBlob(r,tipo,0.86));
+    if(!blob) throw new Error('No he podido preparar la foto.');
+    const bytes=new Uint8Array(await blob.arrayBuffer());
+    const dataURL=c.toDataURL(tipo,0.86);
+    const nombre=`${sello()}-${slug(file.name.replace(/\.[^.]+$/,''))}.${ext}`;
+    const repoPath=`docs/${st.web.subidas}/${nombre}`;
+    const prof=st.ruta.split('/').filter(Boolean).length;
+    const rel=(st.an.baseEscrita?'':'../'.repeat(prof))+st.web.subidas+'/'+nombre;
+    st.imgEdits.set(k,{bytes,dataURL,repoPath,rel,original:file.name,kb:Math.max(1,Math.round(bytes.length/1024))});
+    enviar({type:'img',k,src:dataURL});
+    actualizarCambios(); pintarSeleccion();
+    aviso('ok',`Foto preparada (${w}×${h}, ${Math.max(1,Math.round(bytes.length/1024))} KB). Se subirá al publicar.`);
+  }catch(e){ aviso('error',e.message); }
+}
+
+/* ---------- Panel: textos y cambios ---------- */
+function filas(v){ return Math.min(8,Math.max(1,Math.ceil(v.length/40))); }
+function pintarLista(){
+  const cont=$('#lista');
+  if(!st.an){ cont.innerHTML=''; return; }
+  const q=plano($('#buscar').value.trim());
+  let h='', n=0;
+  for(const f of st.an.frags){
+    const val=st.edits.has(f.i)?st.edits.get(f.i):f.text;
+    if(q&&!plano(val).includes(q)&&!plano(f.text).includes(q)) continue;
+    n++;
+    h+=`<div class="item${st.edits.has(f.i)?' cambiado':''}"><div class="item-cab"><span class="chip">${esc(f.ctx.tipo)}</span>${f.ctx.zona?`<span class="chip">${esc(f.ctx.zona)}</span>`:''}</div><textarea data-frag="${f.i}" rows="${filas(val)}" aria-label="${esc(f.ctx.tipo)}">${esc(val)}</textarea></div>`;
+  }
+  cont.innerHTML=h||'<p class="nota">Ningún texto coincide con la búsqueda.</p>';
+  $('#n-textos').textContent=q?`${n} de ${st.an.frags.length}`:`${st.an.frags.length}`;
+  cont.querySelectorAll('textarea').forEach(autoAlto);
+}
+$('#lista').addEventListener('input',e=>{ const ta=e.target.closest('textarea[data-frag]'); if(ta){ cambiarTexto(+ta.dataset.frag,ta.value,'lista'); autoAlto(ta); } });
+$('#lista').addEventListener('focusin',e=>{ const ta=e.target.closest('textarea[data-frag]'); if(ta) verEnVista(`[data-ed="${ta.dataset.frag}"]`); });
+let tBus=0; $('#buscar').addEventListener('input',()=>{ clearTimeout(tBus); tBus=setTimeout(pintarLista,120); });
+
+function actualizarCambios(){
+  const n=nCambios();
+  const b=$('#publicar'); b.disabled=n===0||st.ocupado; b.querySelector('span').textContent=n?`Publicar (${n})`:'Publicar';
+  let h='';
+  for(const [i,v] of st.edits){ const f=st.an.frags[i]; h+=`<li data-t="t" data-k="${i}"><div class="cambio-txt"><span class="que">${f.ctx.tipo==='Enlace'?'Texto de enlace':esc(f.ctx.tipo)}${st.glob.has(i)?' · en todas las páginas':''}</span><s>${esc(corto(f.text,80))}</s><span>${v?esc(corto(v,80)):'<i>(vacío)</i>'}</span></div><button type="button" class="enlace" data-quitar>Quitar</button></li>`; }
+  for(const [k,v] of st.linkEdits){ const L=st.an.links[k]; h+=`<li data-t="l" data-k="${k}"><div class="cambio-txt"><span class="que">Dirección del enlace${st.linkGlob.has(k)?' · en todas las páginas':''}</span><s>${esc(corto(hrefDe(L),80))}</s><span>${esc(corto(v,80))}</span></div><button type="button" class="enlace" data-quitar>Quitar</button></li>`; }
+  for(const [k,im] of st.imgEdits){ h+=`<li data-t="i" data-k="${k}"><div class="cambio-txt"><span class="que">Foto nueva</span><span>${esc(corto(im.original,60))} · ${im.kb} KB</span></div><button type="button" class="enlace" data-quitar>Quitar</button></li>`; }
+  for(const [k,v] of st.altEdits){ const I=st.an.imgs[k]; const o=I.attrs.get('alt')?dec(I.attrs.get('alt').value):''; h+=`<li data-t="a" data-k="${k}"><div class="cambio-txt"><span class="que">Descripción de foto</span><s>${esc(corto(o||'(sin descripción)',80))}</s><span>${esc(corto(v,80))}</span></div><button type="button" class="enlace" data-quitar>Quitar</button></li>`; }
+  $('#lista-cambios').innerHTML=h;
+  $('#cambios').hidden=n===0;
+  marcarVista();
+}
+$('#lista-cambios').addEventListener('click',e=>{
+  const li=e.target.closest('li'); if(!li) return;
+  const k=+li.dataset.k, t=li.dataset.t;
+  if(e.target.closest('[data-quitar]')){
+    if(t==='t') return quitarTexto(k);
+    if(t==='l'){ st.linkEdits.delete(k); st.linkGlob.delete(k); }
+    if(t==='a') st.altEdits.delete(k);
+    if(t==='i'){ st.imgEdits.delete(k); recargarVista(); }
+    actualizarCambios(); pintarSeleccion(); return;
+  }
+  verEnVista(t==='t'?`[data-ed="${k}"]`:t==='l'?`a[data-edl="${k}"]`:`img[data-edi="${k}"]`);
+});
+$('#descartar').onclick=()=>{ descartarTodo(); aviso('info','Cambios descartados.'); };
+function descartarTodo(){ limpiarCambios(); st.sel=null; pintarTodo(); recargarVista(); }
+function pintarTodo(){ pintarPaginas(); pintarLista(); pintarSeleccion(); actualizarCambios(); }
+
+/* ---------- Publicar (un solo commit con todos los archivos) ---------- */
+function cambiosPagina(an){
+  const R=[], hechos=new Set(), hechosL=new Set();
+  for(const [i,v] of st.edits){ const f=an.frags[i]; R.push({s:f.s,e:f.e,txt:f.lead+encTexto(v)+f.trail}); hechos.add(i); }
+  for(const i of st.glob){ if(!st.edits.has(i)) continue; const f0=an.frags[i], v=st.edits.get(i);
+    for(const f of an.frags) if(!hechos.has(f.i)&&copia(f,f0)){ R.push({s:f.s,e:f.e,txt:f.lead+encTexto(v)+f.trail}); hechos.add(f.i); } }
+  for(const [k,v] of st.linkEdits){ const L=an.links[k]; R.push(L.href?attrRep(L.href,v):{s:L.nameEnd,e:L.nameEnd,txt:' href="'+encAttr(v,'"')+'"'}); hechosL.add(k); }
+  for(const k of st.linkGlob){ if(!st.linkEdits.has(k)) continue; const viejo=hrefDe(an.links[k]), v=st.linkEdits.get(k);
+    for(const L of an.links) if(!hechosL.has(L.k)&&L.href&&hrefDe(L)===viejo){ R.push(attrRep(L.href,v)); hechosL.add(L.k); } }
+  for(const [k,v] of st.altEdits){ const I=an.imgs[k], a=I.attrs.get('alt'); R.push(a?attrRep(a,v):{s:I.nameEnd,e:I.nameEnd,txt:' alt="'+encAttr(v,'"')+'"'}); }
+  for(const [k,im] of st.imgEdits){ const I=an.imgs[k], src=I.attrs.get('src');
+    if(src) R.push(attrRep(src,im.rel)); else R.push({s:I.nameEnd,e:I.nameEnd,txt:' src="'+encAttr(im.rel,'"')+'"'});
+    for(const nm of ['srcset','sizes','data-src','data-srcset','data-lazy-src','data-lazy-srcset']){ const a=I.attrs.get(nm); if(a) R.push({s:a.ws,e:a.end,txt:''}); } }
+  return R;
+}
+function globales(){
+  const g=[];
+  for(const i of st.glob){ if(st.edits.has(i)){ const f=st.an.frags[i]; g.push({tipo:'texto',viejo:f.text,nuevo:st.edits.get(i),zona:f.ctx.zona}); } }
+  for(const k of st.linkGlob){ if(st.linkEdits.has(k)) g.push({tipo:'enlace',viejo:hrefDe(st.an.links[k]),nuevo:st.linkEdits.get(k)}); }
+  return g;
+}
+function propagar(S,gl){
+  const an=analizar(S), R=[], usados=new Set(), usadosL=new Set();
+  for(const g of gl){
+    if(g.tipo==='texto'){ for(const f of an.frags) if(!usados.has(f.i)&&f.text===g.viejo&&(!g.zona||f.ctx.zona===g.zona)){ R.push({s:f.s,e:f.e,txt:f.lead+encTexto(g.nuevo)+f.trail}); usados.add(f.i); } }
+    else{ for(const L of an.links) if(L.href&&!usadosL.has(L.k)&&hrefDe(L)===g.viejo){ R.push(attrRep(L.href,g.nuevo)); usadosL.add(L.k); } }
+  }
+  return R.length?aplicar(S,R):S;
+}
+function reaplicar(base,R,fresco){
+  const M=[];
+  for(const r of R){
+    let hecho=false;
+    for(const ctx of [80,30,12]){
+      const antes=base.slice(Math.max(0,r.s-ctx),r.s), viejo=base.slice(r.s,r.e), despues=base.slice(r.e,r.e+ctx);
+      const aguja=antes+viejo+despues;
+      const p=fresco.indexOf(aguja);
+      if(p>=0&&fresco.indexOf(aguja,p+1)<0){ M.push({s:p+antes.length,e:p+antes.length+viejo.length,txt:r.txt}); hecho=true; break; }
+    }
+    if(!hecho) throw new Error('Alguien ha cambiado esta misma parte de la página mientras editabas. Copia tus cambios, recarga la página y vuelve a hacerlos.');
+  }
+  return aplicar(fresco,M);
+}
+function mensajeCommit(extra){
+  const p=[], t=st.edits.size, l=st.linkEdits.size, im=st.imgEdits.size, a=st.altEdits.size;
+  if(t) p.push(t+(t>1?' textos':' texto')); if(l) p.push(l+(l>1?' enlaces':' enlace')); if(im) p.push(im+(im>1?' fotos':' foto')); if(a) p.push(a+(a>1?' descripciones de foto':' descripción de foto'));
+  return `Editor web · /${st.ruta}: ${p.join(', ')}${extra?` (y en ${extra} página${extra>1?'s':''} más)`:''}`;
+}
+async function publicar(){
+  if(!hayCambios()||st.ocupado) return false;
+  if(!token){ aviso('info','Para publicar, conecta primero el editor con GitHub. Son cinco pasos, una sola vez.'); $('#conexion').scrollIntoView({behavior:'smooth',block:'start'}); $('#token').focus({preventScroll:true}); return false; }
+  st.ocupado=true; actualizarCambios();
+  const espera1=aviso('espera','Publicando…',null,0);
+  const web=st.web;
+  try{
+    for(let intento=0;intento<3;intento++){
+      const ref=await gh(api(web,'/git/ref/heads/main')); const C0=ref.object.sha;
+      const com=await gh(api(web,`/git/commits/${C0}`)); const T0=com.tree.sha;
+      const R=cambiosPagina(st.an);
+      const actual=await leerArchivo(web,st.path,C0);
+      const nuevoPag=actual.sha===st.sha?aplicar(st.src,R):reaplicar(st.src,R,actual.texto);
+      const fich=[];
+      for(const im of st.imgEdits.values()) fich.push({path:im.repoPath,bytes:im.bytes,prev:null});
+      fich.push({path:st.path,bytes:ENC.encode(nuevoPag),prev:actual.sha,esPagina:true});
+      const gl=globales(); let extra=0;
+      if(gl.length){
+        espera1.texto('Buscando el mismo texto en las demás páginas…');
+        const arbol=await gh(api(web,`/git/trees/${T0}?recursive=1`));
+        const otras=arbol.tree.filter(e=>e.type==='blob'&&e.path!==st.path&&((esPagina(e.path)&&e.size>1500)||e.path==='docs/404.html'));
+        for(let j=0;j<otras.length;j+=6){
+          await Promise.all(otras.slice(j,j+6).map(async e=>{
+            const tx=DEC.decode(await leerBlob(web,e.sha)); const nv=propagar(tx,gl);
+            if(nv!==tx){ fich.push({path:e.path,bytes:ENC.encode(nv),prev:e.sha}); extra++; }
+          }));
+          espera1.texto(`Revisando páginas… ${Math.min(j+6,otras.length)} de ${otras.length}`);
+        }
+      }
+      espera1.texto('Subiendo los cambios a GitHub…');
+      const entradas=[];
+      for(const f of fich){
+        const bl=await gh(api(web,'/git/blobs'),{method:'POST',body:JSON.stringify({content:bytesAB64(f.bytes),encoding:'base64'})});
+        f.nuevo=bl.sha; entradas.push({path:f.path,mode:'100644',type:'blob',sha:bl.sha});
+      }
+      const T1=(await gh(api(web,'/git/trees'),{method:'POST',body:JSON.stringify({base_tree:T0,tree:entradas})})).sha;
+      const msg=mensajeCommit(extra);
+      const C1=(await gh(api(web,'/git/commits'),{method:'POST',body:JSON.stringify({message:msg,tree:T1,parents:[C0]})})).sha;
+      try{ await gh(api(web,'/git/refs/heads/main'),{method:'PATCH',body:JSON.stringify({sha:C1,force:false})}); }
+      catch(e){ if(e.status===422&&intento<2){ espera1.texto('Alguien acaba de publicar otra cosa; vuelvo a intentarlo…'); continue; } throw e; }
+      // Éxito
+      const pag=fich.find(f=>f.esPagina);
+      st.ultimo={web,C1,msg,ruta:st.ruta,fich:fich.map(f=>({path:f.path,prev:f.prev,nuevo:f.nuevo}))};
+      st.src=nuevoPag; st.sha=pag.nuevo; web.paginas=web.paginas||null;
+      limpiarCambios(); st.sel=null; st.an=analizar(st.src); pintarTodo(); recargarVista();
+      espera1.cerrar();
+      aviso('ok',`Publicado${extra?` en esta página y en ${extra} más`:''}. Se verá en la web en uno o dos minutos.`,[
+        {t:'Deshacer',f:deshacer},{t:'Ver en GitHub',href:`https://github.com/${OWNER}/${web.repo}/commit/${C1}`}],30000);
+      comprobarEnVivo(web,st.ruta,nuevoPag,C1);
+      return true;
+    }
+  }catch(e){
+    espera1.cerrar(); aviso('error','No se ha publicado. '+e.message);
+    return false;
+  }finally{ st.ocupado=false; actualizarCambios(); }
+  return false;
+}
+async function comprobarEnVivo(web,ruta,esperado,C1){
+  const url=`https://${web.dom}/${ruta}`;
+  const av=aviso('espera','Comprobando que la web ya lo muestra…',null,0);
+  for(let i=0;i<40;i++){
+    await espera(6000);
+    if(!st.ultimo||st.ultimo.C1!==C1){ av.cerrar(); return; }
+    try{ const r=await fetch(url+'?editor='+Date.now(),{cache:'no-store'}); if(r.ok){ const t=await r.text(); if(t===esperado){ av.cerrar(); aviso('ok','Ya se ve en la web.',[{t:'Verla',href:url}]); return; } } }catch(e){}
+  }
+  av.cerrar(); aviso('info','Está publicado en GitHub, pero la web aún no lo muestra. Suele tardar unos minutos más.',[{t:'Verla',href:url}]);
+}
+async function deshacer(){
+  const u=st.ultimo; if(!u||st.ocupado) return;
+  if(hayCambios()){ aviso('info','Antes de deshacer, publica o descarta los cambios que tienes a medias.'); return; }
+  st.ocupado=true; actualizarCambios();
+  const av=aviso('espera','Deshaciendo el último cambio…',null,0);
+  try{
+    const web=u.web;
+    const ref=await gh(api(web,'/git/ref/heads/main')); const C=ref.object.sha;
+    const com=await gh(api(web,`/git/commits/${C}`));
+    if(C!==u.C1){
+      const arbol=await gh(api(web,`/git/trees/${com.tree.sha}?recursive=1`));
+      const mapa=new Map(arbol.tree.map(e=>[e.path,e.sha]));
+      for(const f of u.fich){ if(mapa.get(f.path)!==f.nuevo) throw new Error('Después de tu cambio se ha publicado otro en las mismas páginas. Deshazlo desde el historial de GitHub o pídeselo a Claude.'); }
+    }
+    const entradas=u.fich.map(f=>({path:f.path,mode:'100644',type:'blob',sha:f.prev}));
+    const T=(await gh(api(web,'/git/trees'),{method:'POST',body:JSON.stringify({base_tree:com.tree.sha,tree:entradas})})).sha;
+    const C2=(await gh(api(web,'/git/commits'),{method:'POST',body:JSON.stringify({message:'Deshacer: '+u.msg,tree:T,parents:[C]})})).sha;
+    await gh(api(web,'/git/refs/heads/main'),{method:'PATCH',body:JSON.stringify({sha:C2,force:false})});
+    st.ultimo=null; av.cerrar();
+    aviso('ok','Deshecho. La web vuelve a estar como antes en uno o dos minutos.');
+    if(st.web===web&&st.ruta===u.ruta) abrir(web,u.ruta);
+  }catch(e){ av.cerrar(); aviso('error','No se ha podido deshacer. '+e.message); }
+  finally{ st.ocupado=false; actualizarCambios(); }
+}
+
+/* ---------- Conexión ---------- */
+async function pintarConexion(){
+  const on=!!token;
+  $('#con-ok').hidden=!on; $('#con-no').hidden=on;
+  const eg=$('#estado-gh'); eg.classList.toggle('on',on); eg.querySelector('span').textContent=on?'GitHub conectado':'Sin conectar';
+  if(on){ try{ const u=await gh('/user'); $('#con-user').textContent='Conectado como '+u.login; if(u.login.toLowerCase()!==OWNER) aviso('info',`Ese código es de la cuenta ${u.login}, no de ${OWNER}. Puede que no deje publicar.`); }catch(e){ if(e.status===401){ aviso('error',e.message); } } }
+}
+$('#conectar').onclick=async()=>{
+  const tk=$('#token').value.trim();
+  if(!/^(github_pat_|ghp_|gho_|ghu_)[A-Za-z0-9_]{20,}$/.test(tk)){ aviso('error','Eso no parece un código de GitHub. Debe empezar por github_pat_ y ser largo.'); return; }
+  const previo=token; token=tk;
+  try{ const u=await gh('/user'); guardarToken(tk,$('#recordar').checked); $('#token').value=''; pintarConexion(); aviso('ok','Conectado como '+u.login+'. Ya puedes publicar desde este dispositivo.'); }
+  catch(e){ token=previo; aviso('error',e.status===401?'GitHub no reconoce ese código. Cópialo de nuevo, entero.':e.message); }
+};
+$('#desconectar').onclick=()=>{ token=''; guardarToken('',false); pintarConexion(); aviso('info','Desconectado. El código se ha borrado de este navegador.'); };
+
+/* ---------- Avisos visuales ---------- */
+const ICO={ok:'<svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>',error:'<svg class="i" viewBox="0 0 24 24"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg>',info:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.5"/></svg>',espera:'<div class="giro"></div>'};
+function aviso(tipo,texto,acciones,ms){
+  const el=document.createElement('div'); el.className='aviso '+tipo; el.setAttribute('role',tipo==='error'?'alert':'status');
+  el.innerHTML=`<div class="ico">${ICO[tipo]||ICO.info}</div><div class="cuerpo"><div class="txt"></div><div class="acciones"></div></div><button type="button" class="cerrar" aria-label="Cerrar aviso">×</button>`;
+  el.querySelector('.txt').textContent=texto;
+  const ac=el.querySelector('.acciones');
+  (acciones||[]).forEach(a=>{
+    const b=a.href?document.createElement('a'):document.createElement('button');
+    b.className='btn'; b.textContent=a.t;
+    if(a.href){ b.href=a.href; b.target='_blank'; b.rel='noopener'; } else { b.type='button'; b.onclick=()=>{ cerrar(); a.f(); }; }
+    ac.appendChild(b);
+  });
+  if(!ac.children.length) ac.remove();
+  const cerrar=()=>{ el.remove(); };
+  el.querySelector('.cerrar').onclick=cerrar;
+  $('#avisos').appendChild(el);
+  const dur=ms===0?0:(ms||(tipo==='error'?0:(acciones&&acciones.length?15000:6000)));
+  if(dur) setTimeout(cerrar,dur);
+  return {cerrar,texto:t=>{ el.querySelector('.txt').textContent=t; }};
+}
+
+/* ---------- Controles ---------- */
+selWeb.onchange=()=>{ const w=WEBS.find(x=>x.k===selWeb.value); if(w) pedirNavegar(w,''); };
+selPag.onchange=()=>{ pedirNavegar(st.web,selPag.value); };
+function ponerModo(m){ st.modo=m; $('#m-editar').classList.toggle('on',m==='editar'); $('#m-navegar').classList.toggle('on',m!=='editar'); $('#m-editar').setAttribute('aria-pressed',m==='editar'); $('#m-navegar').setAttribute('aria-pressed',m!=='editar'); enviar({type:'modo',modo:m}); }
+$('#m-editar').onclick=()=>ponerModo('editar');
+$('#m-navegar').onclick=()=>ponerModo('navegar');
+function ponerDisp(d){ $('#vwrap').classList.toggle('movil',d==='movil'); $('#d-pc').classList.toggle('on',d!=='movil'); $('#d-movil').classList.toggle('on',d==='movil'); $('#d-pc').setAttribute('aria-pressed',d!=='movil'); $('#d-movil').setAttribute('aria-pressed',d==='movil'); }
+$('#d-pc').onclick=()=>ponerDisp('pc');
+$('#d-movil').onclick=()=>ponerDisp('movil');
+$('#publicar').onclick=()=>publicar();
+$('#g-publicar').onclick=async()=>{ const seguir=pendiente; ocultarGuardia(); if(await publicar()&&seguir) seguir(); };
+$('#g-descartar').onclick=()=>{ const seguir=pendiente; ocultarGuardia(); descartarTodo(); if(seguir) seguir(); };
+$('#g-quedar').onclick=()=>ocultarGuardia();
+
+pintarSelectores();
+pintarConexion();
+if(!location.hash) history.replaceState(null,'','#'+WEBS[0].k+'/');
+(()=>{ const {web,ruta}=leerHash(); abrir(web,ruta); })();
+</script>
+</body>
+</html>
