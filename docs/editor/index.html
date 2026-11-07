@@ -222,9 +222,14 @@ const WEBS=[
   {k:'teots',repo:'teots-web',dom:'teots.org',nombre:'TEOTS'},
   {k:'apder',repo:'apder-web',dom:'apder.org',nombre:'APDER'},
   {k:'ianivillage',repo:'ianivillage-web',dom:'ianivillage.com',nombre:'Iani Village'},
-  {k:'teotsai',repo:'teotsai-web',dom:'teotsai.com',nombre:'TEOTS AI'}
+  {k:'teotsai',repo:'teotsai-web',dom:'teotsai.com',nombre:'TEOTS AI',sinHttps:true},
+  {k:'theswisstree',repo:'theswisstree-web',dom:'theswisstree.com',nombre:'The Swiss Tree',sinHttps:true}
 ];
-const NOMBRES={"apder-web":{"":"Portada","aviso-legal/":"Aviso legal","divulgation/":"Divulgation","meditacion-corazon-2026/":"Protocolo: «Meditación de corazón»","politica-de-privacidad/":"Política de privacidad","protocolo-meditacion-agosto-2024/":"Protocolo: «Taller de meditación» · Agosto 2024","terapia-asistida-mdma/":"Terapia Asistida por MDMA"},"espacioteots-web":{"":"Portada","ana-andrade/":"Ana Andrade · Terapeuta","aviso-legal/":"Aviso Legal","coworking/":"Coworking","coworking/coruna/":"Coworking · A Coruña","coworking/tarifas/":"Coworking · Tarifas","elisabet-ros/":"Elisabet Ros · Terapia Transpersonal","hayat-lanouar/":"Hayat Lanouar · Nutrición Consciente","lucia-martinez/":"Lucía Martínez · Psicología","manuel-lameiro/":"Manuel Lameiro · Psicología","mari-alves/":"Mari Alves · Masaje Relajante","maria-sonoterapia/":"María Núñez · Sonoterapia","politica-de-privacidad/":"Política de Privacidad","roberto-linares/":"Roberto Liñares","rocio-quinteiro/":"Rocío Quinteiro · Integración Emocional","salas/":"Salas","tarifas-2026-manuel/":"Tarifas 2026 · Manuel","terapias/":"Terapias","yoga-barbara-carbajal/":"Barbara Carbajal · Yoga"},"ianivillage-web":{"":"Portada","aviso-legal/":"Aviso legal","politica-de-privacidad/":"Política de privacidad"},"teots-web":{"":"Portada","contacto/":"Contacto","crisalida-patrones/":"Crisálida · Patrones","crisalida-rabia/":"Crisálida · Rabia","descarga-psico-corporal/":"Descarga Psico-corporal","eneagrama/":"Eneagrama","eneagrama/eneatipo-1/":"Eneatipo 1","eneagrama/eneatipo-2/":"Eneatipo 2","eneagrama/eneatipo-3/":"Eneatipo 3","eneagrama/eneatipo-4/":"Eneatipo 4","eneagrama/eneatipo-5/":"Eneatipo 5","eneagrama/eneatipo-6/":"Eneatipo 6","eneagrama/eneatipo-7/":"Eneatipo 7","eneagrama/eneatipo-8/":"Eneatipo 8","eneagrama/eneatipo-9/":"Eneatipo 9","expresion-corporal/":"Expresión corporal","inicio-3/aviso-legal/":"Aviso legal","inicio-3/politica-de-privacidad/":"Política de privacidad","la-importancia-de-los-habitos/":"La Importancia de los Hábitos para Transformar tu Vida","meditacion/":"Meditación","proceso-crisalida/":"Proceso Crisálida","psicologia/":"Psicología","recursos/":"Recursos","recursos/documentales/":"Documentales","recursos/documentales/crazywise/":"Crazywise","recursos/documentales/el-guion-de-tu-vida/":"El guion de tu vida","recursos/documentales/nino-divino-conversaciones-con-claudio-naranjo/":"Niño divino: Conversaciones con Claudio Naranjo","recursos/documentales/the-wisdom-of-trauma/":"The Wisdom of Trauma","recursos/documentales/viaje-interior-claudio-naranjo/":"Viaje Interior (Claudio Naranjo)","recursos/documentales/voces-de-la-tierra/":"Voces de la tierra: Claudio Naranjo","recursos/libros/":"Libros","recursos/peliculas/":"Películas","recursos/peliculas/disfrutando-cada-momento/":"Disfrutando cada momento","recursos/peliculas/el-cambio/":"El cambio","recursos/peliculas/el-guardian-de-suenos/":"El guardián de sueños","recursos/peliculas/el-guerrero-pacifico/":"El guerrero pacífico","recursos/peliculas/el-planeta-libre/":"El planeta libre","recursos/peliculas/kiriku-y-la-bruja/":"Kiriku y la bruja","recursos/peliculas/la-cabana/":"La Cabaña","recursos/peliculas/lucky/":"Lucky","recursos/peliculas/soul/":"Soul","recursos/peliculas/violines-en-el-cielo/":"Violines en el cielo","recursos/videos/":"Videos","retiro-verano-2023/":"Retiro de verano 2023","sobre-mi/":"Sobre mi","yoga/":"Yoga"},"teotsai-web":{"":"Portada","aviso-legal/":"Aviso legal","politica-de-privacidad/":"Política de privacidade"}};
+/* teotsai.com y theswisstree.com aún no tienen el certificado https de GitHub Pages: se enlazan con http
+   y la vista toma sus estilos y fotos del CDN jsDelivr (mismo repositorio). Al activarse https, quitar sinHttps. */
+const urlWeb=(w,r)=>(w.sinHttps?'http://':'https://')+w.dom+'/'+(r||'');
+const baseVista=(w,r)=>w.sinHttps?`https://cdn.jsdelivr.net/gh/${OWNER}/${w.repo}@main/docs/${r||''}`:`https://${w.dom}/${r||''}`;
+const NOMBRES={"espacioteots-web":{"":"Portada","ana-andrade/":"Ana Andrade · Terapeuta","aviso-legal/":"Aviso Legal","yoga-barbara-carbajal/":"Barbara Carbajal · Yoga","coworking/":"Coworking","coworking/coruna/":"Coworking · A Coruña","coworking/tarifas/":"Coworking · Tarifas","elisabet-ros/":"Elisabet Ros · Terapia Transpersonal","hayat-lanouar/":"Hayat Lanouar · Nutrición Consciente","lucia-martinez/":"Lucía Martínez · Psicología","manuel-lameiro/":"Manuel Lameiro · Psicología","mari-alves/":"Mari Alves · Masaje Relajante","maria-sonoterapia/":"María Núñez · Sonoterapia","politica-de-privacidad/":"Política de Privacidad","roberto-linares/":"Roberto Liñares","rocio-quinteiro/":"Rocío Quinteiro · Integración Emocional","salas/":"Salas","tarifas-2026-manuel/":"Tarifas 2026 · Manuel","terapias/":"Terapias"},"teots-web":{"":"Portada","inicio-3/aviso-legal/":"Aviso legal","contacto/":"Contacto","recursos/documentales/crazywise/":"Crazywise","crisalida-patrones/":"Crisálida · Patrones","crisalida-rabia/":"Crisálida · Rabia","descarga-psico-corporal/":"Descarga Psico-corporal","recursos/peliculas/disfrutando-cada-momento/":"Disfrutando cada momento","recursos/documentales/":"Documentales","recursos/peliculas/el-cambio/":"El cambio","recursos/peliculas/el-guardian-de-suenos/":"El guardián de sueños","recursos/peliculas/el-guerrero-pacifico/":"El guerrero pacífico","recursos/documentales/el-guion-de-tu-vida/":"El guion de tu vida","recursos/peliculas/el-planeta-libre/":"El planeta libre","eneagrama/":"Eneagrama","eneagrama/eneatipo-1/":"Eneatipo 1","eneagrama/eneatipo-2/":"Eneatipo 2","eneagrama/eneatipo-3/":"Eneatipo 3","eneagrama/eneatipo-4/":"Eneatipo 4","eneagrama/eneatipo-5/":"Eneatipo 5","eneagrama/eneatipo-6/":"Eneatipo 6","eneagrama/eneatipo-7/":"Eneatipo 7","eneagrama/eneatipo-8/":"Eneatipo 8","eneagrama/eneatipo-9/":"Eneatipo 9","expresion-corporal/":"Expresión corporal","recursos/peliculas/kiriku-y-la-bruja/":"Kiriku y la bruja","recursos/peliculas/la-cabana/":"La Cabaña","la-importancia-de-los-habitos/":"La Importancia de los Hábitos para Transformar tu Vida","recursos/libros/":"Libros","recursos/peliculas/lucky/":"Lucky","meditacion/":"Meditación","recursos/documentales/nino-divino-conversaciones-con-claudio-naranjo/":"Niño divino: Conversaciones con Claudio Naranjo","recursos/peliculas/":"Películas","inicio-3/politica-de-privacidad/":"Política de privacidad","proceso-crisalida/":"Proceso Crisálida","psicologia/":"Psicología","recursos/":"Recursos","retiro-verano-2023/":"Retiro de verano 2023","sobre-mi/":"Sobre mi","recursos/peliculas/soul/":"Soul","recursos/documentales/the-wisdom-of-trauma/":"The Wisdom of Trauma","recursos/documentales/viaje-interior-claudio-naranjo/":"Viaje Interior (Claudio Naranjo)","recursos/videos/":"Videos","recursos/peliculas/violines-en-el-cielo/":"Violines en el cielo","recursos/documentales/voces-de-la-tierra/":"Voces de la tierra: Claudio Naranjo","yoga/":"Yoga"},"apder-web":{"":"Portada","sustancias/2c-b/":"2C-B","sustancias/4-aco-dmt/":"4-AcO-DMT","sustancias/5-meo-dmt/":"5-MeO-DMT","sustancias/amanita-muscaria/":"Amanita muscaria","aviso-legal/":"Aviso legal","sustancias/ayahuasca/":"Ayahuasca","biblioteca/":"Biblioteca","sustancias/cacao/":"Cacao ceremonial","sustancias/cannabis/":"Cannabis","sustancias/datura/":"Datura y floripondio","divulgation/":"Divulgation","sustancias/dmt/":"DMT","sustancias/ibogaina/":"Ibogaína","investigacion-terapeutica/":"Investigación terapéutica","sustancias/kanna/":"Kanna (Sceletium tortuosum)","sustancias/ketamina/":"Ketamina","sustancias/kratom/":"Kratom","sustancias/lsd/":"LSD","sustancias/mdma/":"MDMA","medicinas/":"Medicinas por categorías","sustancias/mescalina/":"Mescalina, peyote y San Pedro","politica-de-privacidad/":"Política de privacidad","meditacion-corazon-2026/":"Protocolo: «Meditación de corazón»","protocolo-meditacion-agosto-2024/":"Protocolo: «Taller de meditación»","sustancias/salvia-divinorum/":"Salvia divinorum","sustancias/psilocibina/":"Setas de psilocibina","sustancias/":"Sustancias (índice)","sustancias/tabaco/":"Tabaco sagrado (mapacho y rapé)","terapia-asistida-mdma/":"Terapia Asistida por MDMA"},"ianivillage-web":{"":"Portada","aviso-legal/":"Aviso legal","politica-de-privacidad/":"Política de privacidad"},"teotsai-web":{"":"Portada","aviso-legal/":"Aviso legal","politica-de-privacidad/":"Política de privacidade"},"theswisstree-web":{"":"Portada","aviso-legal-y-privacidad/":"Aviso legal y privacidad","politica-de-cookies/":"Política de cookies"}};
 
 /* ---------- Puente: se ejecuta DENTRO de la vista (aislada), habla con el editor por mensajes ---------- */
 function puente(){
@@ -464,6 +469,16 @@ async function gh(ruta,op){
 }
 const api=(web,resto)=>`/repos/${OWNER}/${web.repo}${resto}`;
 async function leerBlob(web,sha){ const b=await gh(api(web,`/git/blobs/${sha}`)); return b64ABytes(b.content); }
+async function shaGit(bytes){
+  const cab=ENC.encode('blob '+bytes.length+'\0'); const todo=new Uint8Array(cab.length+bytes.length); todo.set(cab); todo.set(bytes,cab.length);
+  const h=new Uint8Array(await crypto.subtle.digest('SHA-1',todo)); return Array.from(h,b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function leerCrudo(web,path){
+  let r; try{ r=await fetch(`https://raw.githubusercontent.com/${OWNER}/${web.repo}/main/${encPath(path)}`,{cache:'no-store'}); }catch(e){ throw new ErrorGH('No hay conexión con GitHub. Revisa internet y vuelve a intentarlo.',0); }
+  if(!r.ok) throw new ErrorGH(r.status===404?'No encuentro esa página en GitHub. Puede que se haya movido o borrado.':'GitHub ha respondido con un error ('+r.status+').',r.status);
+  const bytes=new Uint8Array(await r.arrayBuffer());
+  return {sha:await shaGit(bytes),texto:DEC.decode(bytes)};
+}
 async function leerArchivo(web,path,ref){
   const j=await gh(api(web,`/contents/${encPath(path)}?ref=${encodeURIComponent(ref||'main')}`));
   const bytes=(j.content&&j.encoding==='base64')?b64ABytes(j.content):await leerBlob(web,j.sha);
@@ -490,7 +505,7 @@ async function cargarPaginas(web){
   }catch(e){
     web.paginas=Object.keys(NOMBRES[web.repo]||{'':'Portada'});
     web.subidas=web.repo==='teotsai-web'?'img/editor':'wp-content/uploads/editor';
-    aviso('info','No he podido leer la lista de páginas de GitHub; uso la última conocida. '+e.message);
+    if(!cargarPaginas.avisado){ cargarPaginas.avisado=true; aviso('info','Uso la lista de páginas guardada en el editor: GitHub limita las consultas mientras el editor no está conectado. Al conectarlo se actualiza sola.'); }
   }
   web.paginas.sort((a,b)=>a===''?-1:b===''?1:nombrePagina(web,a).localeCompare(nombrePagina(web,b),'es'));
 }
@@ -504,7 +519,7 @@ function pintarPaginas(){
   if(!lista.includes(st.ruta)) lista.unshift(st.ruta);
   selPag.innerHTML=lista.map(r=>`<option value="${esc(r)}">${esc(nombrePagina(w,r))}</option>`).join('');
   selPag.value=st.ruta;
-  $('#abrir').href=`https://${w.dom}/${st.ruta}`;
+  $('#abrir').href=urlWeb(w,st.ruta);
   $('#historial').href=`https://github.com/${OWNER}/${w.repo}/commits/main`;
 }
 
@@ -558,7 +573,9 @@ async function abrir(web,ruta){
   pintarPaginas();
   try{
     const path=pathDe(ruta);
-    const r=await leerArchivo(web,path,'main');
+    let r;
+    if(token) r=await leerArchivo(web,path,'main');
+    else{ try{ r=await leerCrudo(web,path); }catch(e){ if(e.status===404) throw e; r=await leerArchivo(web,path,'main'); } }
     if(id!==st.carga) return;
     Object.assign(st,{path,sha:r.sha,src:r.texto,scrollY:0,sel:null});
     limpiarCambios();
@@ -586,7 +603,7 @@ function construirVista(){
   }
   for(const L of an.links) ins.push({s:L.nameEnd,e:L.nameEnd,txt:` data-edl="${L.k}"`});
   for(const I of an.imgs) ins.push({s:I.nameEnd,e:I.nameEnd,txt:` data-edi="${I.k}"`});
-  const base=`https://${st.web.dom}/${st.ruta}`.replace(/"/g,'%22');
+  const base=baseVista(st.web,st.ruta).replace(/"/g,'%22');
   const cabeza=`<base href="${base}"><script>window.__edY=${st.scrollY|0};window.__edModo=${JSON.stringify(st.modo)};${PUENTE}<\/script><style>${CSS_VISTA}</style>`;
   if(an.headIns>=0) ins.push({s:an.headIns,e:an.headIns,txt:cabeza});
   else{ const m=/<html[^>]*>/i.exec(S); const pos=m?m.index+m[0].length:0; ins.push({s:pos,e:pos,txt:'<head>'+cabeza+'</head>'}); }
@@ -623,6 +640,8 @@ window.addEventListener('message',ev=>{
   else if(m.type==='scroll'){ st.scrollY=m.y; }
 });
 function irA(href){
+  const cdn=href.match(/^https:\/\/cdn\.jsdelivr\.net\/gh\/[^/]+\/([^@/]+)@main\/docs\/([^?#]*)/);
+  if(cdn){ const w=WEBS.find(x=>x.repo===cdn[1]); if(w) href=urlWeb(w,cdn[2]); }
   let u; try{ u=new URL(href); }catch(e){ return; }
   const host=u.hostname.replace(/^www\./,'');
   const web=WEBS.find(w=>w.dom===host);
@@ -685,7 +704,7 @@ function describirEnlace(h){
   if(h.charAt(0)==='#') return 'Salta a una sección de esta misma página';
   try{ const u=new URL(h,`https://${st.web.dom}/${st.ruta}`); if(u.hostname.replace(/^www\./,'')===st.web.dom) return 'Página de esta web: '+(u.pathname||'/'); return 'Abre '+u.hostname; }catch(e){ return ''; }
 }
-function urlAbs(rel){ try{ return new URL(rel,`https://${st.web.dom}/${st.ruta}`).href; }catch(e){ return rel; } }
+function urlAbs(rel){ try{ return new URL(rel,baseVista(st.web,st.ruta)).href; }catch(e){ return rel; } }
 
 function pintarSeleccion(){
   const box=$('#sel'), s=st.sel;
@@ -929,7 +948,8 @@ async function publicar(){
   return false;
 }
 async function comprobarEnVivo(web,ruta,esperado,C1){
-  const url=`https://${web.dom}/${ruta}`;
+  const url=urlWeb(web,ruta);
+  if(web.sinHttps){ aviso('info',`${web.dom} todavía no tiene https, así que no puedo comprobarlo desde aquí. Míralo en un par de minutos.`,[{t:'Verla',href:url}]); return; }
   const av=aviso('espera','Comprobando que la web ya lo muestra…',null,0);
   for(let i=0;i<40;i++){
     await espera(6000);
