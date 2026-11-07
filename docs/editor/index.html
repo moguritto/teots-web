@@ -632,6 +632,7 @@ function irA(href){
     if(/\.[a-z0-9]{2,5}$/i.test(ruta)){ aviso('info','Ese enlace abre un archivo, no una página.',[{t:'Abrirlo',href:u.href}]); return; }
     ruta+='/';
   }
+  if(web===st.web&&ruta===st.ruta){ aviso('info','Ese enlace salta a una sección de esta misma página.'); return; }
   if(web.paginas&&!web.paginas.includes(ruta)){ aviso('info','Esa dirección no es una página editable (es una redirección o no existe).',[{t:'Abrirla en la web',href:u.href}]); return; }
   pedirNavegar(web,ruta);
 }
