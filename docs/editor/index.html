@@ -129,6 +129,14 @@ pre.mensaje{font:13px/1.5 var(--mono);white-space:pre-wrap;overflow-wrap:anywher
 .aviso .acciones{display:flex;gap:8px;flex-wrap:wrap}
 .aviso .acciones .btn{padding:5px 10px;font-size:.86rem}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+body.revisando #intro,body.revisando #sel,body.revisando #cambios,body.revisando #textos,body.revisando #rev,body.revisando #pend{display:none!important}
+.peligro{border:1px solid var(--bad);background:var(--bad-soft);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.peligro b{color:var(--bad)}
+pre.trozo{font:12px/1.45 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;background:var(--surface);border-radius:8px;padding:8px;margin:0;max-height:150px;overflow:auto}
+.chip.mal{color:var(--bad);background:var(--bad-soft)}
+.rev-foto{max-width:100%;max-height:110px;border-radius:8px;border:1px solid var(--line);align-self:flex-start}
+.btn.peligroso{color:var(--bad);border-color:var(--bad)}
+#rev .lista-cambios li{align-items:center}
 </style>
 </head>
 <body>
@@ -169,6 +177,14 @@ pre.mensaje{font:13px/1.5 var(--mono);white-space:pre-wrap;overflow-wrap:anywher
       </div>
     </div>
 
+    <section class="sec" id="rev" hidden>
+      <div class="sec-cab"><h2>Cambios por aprobar</h2><span class="chip acento" id="rev-n"></span></div>
+      <p class="nota">Lo que envían las personas con usuario no sale en la web hasta que tú lo apruebas.</p>
+      <ul class="lista-cambios" id="rev-lista"></ul>
+    </section>
+    <section class="tarjeta" id="rev-tarjeta" hidden></section>
+    <div class="guardia" id="pend" hidden></div>
+
     <p class="intro" id="intro"><b>Pincha en cualquier texto de la página</b> y escribe encima. Pulsa Intro para terminar. Nada sale a internet hasta que pulses <b>Publicar</b>.</p>
 
     <section class="tarjeta" id="sel" hidden></section>
@@ -191,6 +207,7 @@ pre.mensaje{font:13px/1.5 var(--mono);white-space:pre-wrap;overflow-wrap:anywher
         <p class="ok-gh"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg><span id="ses-nombre"></span></p>
         <p class="nota">Puedes cambiar estas páginas:</p>
         <ul class="mis-pags" id="ses-pags"></ul>
+        <p class="nota">Cuando pulses <b>Enviar</b>, Manuel verá tu cambio y lo aprobará antes de que salga en la web.</p>
         <div><button type="button" class="btn" id="salir">Salir</button></div>
       </div>
       <form id="ses-no" class="sec" hidden>
@@ -225,10 +242,6 @@ pre.mensaje{font:13px/1.5 var(--mono);white-space:pre-wrap;overflow-wrap:anywher
 
     <section class="sec" id="admin" hidden>
       <div class="sec-cab"><h2>Personas que pueden editar</h2><span class="chip" id="adm-n"></span></div>
-      <div class="guardia" id="adm-activar" hidden>
-        <div>Para que otras personas puedan publicar, el servidor del editor necesita tu permiso de GitHub. Se hace una sola vez y queda guardado cifrado.</div>
-        <div><button type="button" class="btn primario" id="adm-activar-btn">Activar</button></div>
-      </div>
       <ul class="lista-cambios" id="adm-lista"></ul>
       <section class="tarjeta" id="adm-form" hidden>
         <div class="sel-cab"><h2 id="adm-form-tit">Nueva persona</h2><button type="button" class="cerrar" id="adm-cerrar" aria-label="Cerrar">×</button></div>
@@ -258,7 +271,7 @@ pre.mensaje{font:13px/1.5 var(--mono);white-space:pre-wrap;overflow-wrap:anywher
         <li>En modo <b>Editar</b>, pincha un texto, una foto o un enlace y cámbialo. También puedes buscar el texto en la lista.</li>
         <li>Los cambios se ven al momento en amarillo. Pulsa <b>Publicar</b>: en uno o dos minutos está en internet.</li>
       </ol>
-      <p class="nota">Si te equivocas, tras publicar aparece <b>Deshacer</b>. Además, cada cambio queda guardado en el <a id="historial" target="_blank" rel="noopener">historial de GitHub</a>. Las fotos de fondo, los colores y el diseño no se cambian aquí: pídeselo a Claude.</p>
+      <p class="nota">Si entras con usuario y contraseña, el botón es <b>Enviar</b>: Manuel revisa el cambio antes de que salga en la web. Si te equivocas, tras publicar aparece <b>Deshacer</b>. Además, cada cambio queda guardado en el <a id="historial" target="_blank" rel="noopener">historial de GitHub</a>. Las fotos de fondo, los colores y el diseño no se cambian aquí: pídeselo a Claude.</p>
     </section>
   </aside>
 </main>
@@ -485,7 +498,8 @@ function hrefDe(L){ return L.href?dec(L.href.value):''; }
 /* ---------- Estado ---------- */
 const st={web:null,ruta:'',path:'',sha:'',src:'',an:null,
   edits:new Map(),glob:new Set(),globManual:new Map(),linkEdits:new Map(),linkGlob:new Set(),altEdits:new Map(),imgEdits:new Map(),
-  sel:null,modo:'editar',scrollY:0,ultimo:null,ocupado:false,carga:0};
+  sel:null,modo:'editar',scrollY:0,ultimo:null,ocupado:false,carga:0,
+  rev:null,antesRev:null,base:null,fotosProp:[],pendiente:null};
 const CLAVE='editorWebs.token';
 function leerToken(){ try{ return localStorage.getItem(CLAVE)||sessionStorage.getItem(CLAVE)||''; }catch(e){ return ''; } }
 function guardarToken(tk,recordar){ try{ localStorage.removeItem(CLAVE); sessionStorage.removeItem(CLAVE); if(tk) (recordar?localStorage:sessionStorage).setItem(CLAVE,tk); }catch(e){} }
@@ -613,7 +627,7 @@ function ponerHash(web,ruta){
 }
 let pendiente=null;
 function pedirNavegar(web,ruta){
-  if(web===st.web&&ruta===st.ruta) return;
+  if(web===st.web&&ruta===st.ruta&&!st.rev) return;
   if(hayCambios()){ mostrarGuardia(()=>ponerHash(web,ruta)); pintarPaginas(); return; }
   ponerHash(web,ruta);
 }
@@ -627,7 +641,7 @@ function mostrarGuardia(seguir){
 function ocultarGuardia(){ $('#guardia').hidden=true; pendiente=null; }
 window.addEventListener('hashchange',()=>{
   const {web,ruta}=leerHash();
-  if(web===st.web&&ruta===st.ruta) return;
+  if(web===st.web&&ruta===st.ruta&&!st.rev) return;
   if(hayCambios()){
     history.replaceState(null,'','#'+st.web.k+'/'+st.ruta);
     mostrarGuardia(()=>ponerHash(web,ruta));
@@ -643,7 +657,7 @@ async function abrir(web,ruta){
     const w2=x&&WEBS.find(q=>q.repo===x.repo);
     if(w2){ history.replaceState(null,'','#'+w2.k+'/'+x.ruta); web=w2; ruta=x.ruta; }
   }
-  ocultarGuardia();
+  ocultarGuardia(); dejarRev();
   const id=++st.carga;
   mostrarCargando('Cargando la página…');
   st.web=web; st.ruta=ruta;
@@ -656,7 +670,10 @@ async function abrir(web,ruta){
     if(token) r=await leerArchivo(web,path,'main');
     else{ try{ r=await leerCrudo(web,path); }catch(e){ if(e.status===404) throw e; r=await leerArchivo(web,path,'main'); } }
     if(id!==st.carga) return;
-    Object.assign(st,{path,sha:r.sha,src:r.texto,scrollY:0,sel:null});
+    Object.assign(st,{path,sha:r.sha,src:r.texto,scrollY:0,sel:null,base:null,fotosProp:[],pendiente:null});
+    if(modoUsuario()){
+      try{ const m=await srv(`/mia?repo=${encodeURIComponent(web.repo)}&path=${encodeURIComponent(path)}`); if(id!==st.carga) return; if(m.propuesta) cargarMia(m.propuesta); }catch(e){}
+    }
     limpiarCambios();
     st.an=analizar(st.src);
     pintarTodo();
@@ -712,9 +729,13 @@ window.addEventListener('message',ev=>{
   if(ev.source!==vista.contentWindow) return;
   const m=ev.data; if(!m||!m.__ed) return;
   if(m.type==='listo'){
-    ocultarCargando(); enviar({type:'modo',modo:st.modo}); marcarVista();
+    ocultarCargando();
+    if(st.rev){ enviar({type:'modo',modo:'navegar'}); if(st.rev.cmp.cambios.some(c=>c.b)) setTimeout(()=>enviar({type:'ver',sel:'[data-rv]'}),500); return; }
+    enviar({type:'modo',modo:st.modo}); marcarVista();
+    for(const fp of st.fotosProp) for(const I of st.an.imgs){ const a=I.attrs.get('src'); if(a&&dec(a.value).endsWith('/'+fp.nombre)&&!st.imgEdits.has(I.k)) enviar({type:'img',k:I.k,src:fp.dataURL}); }
     for(const [k,im] of st.imgEdits) enviar({type:'img',k,src:im.dataURL});
   }
+  else if(st.rev){ if(m.type==='scroll') st.scrollY=m.y; return; }
   else if(m.type==='sel'){ st.sel={frag:m.frag,link:m.link,img:m.img}; pintarSeleccion(); if(m.frag==null&&window.matchMedia('(max-width:900px)').matches) $('#sel').scrollIntoView({block:'start',behavior:'smooth'}); }
   else if(m.type==='texto'){ if(st.an&&st.an.frags[m.frag]) cambiarTexto(m.frag,m.text,'vista'); }
   else if(m.type==='ir'){ irA(m.href); }
@@ -899,7 +920,8 @@ let tBus=0; $('#buscar').addEventListener('input',()=>{ clearTimeout(tBus); tBus
 
 function actualizarCambios(){
   const n=nCambios();
-  const b=$('#publicar'); b.disabled=n===0||st.ocupado; b.querySelector('span').textContent=n?`Publicar (${n})`:'Publicar';
+  const b=$('#publicar'), verbo=modoUsuario()?'Enviar':'Publicar'; b.disabled=n===0||st.ocupado||!!st.rev; b.querySelector('span').textContent=n?`${verbo} (${n})`:verbo;
+  b.title=modoUsuario()?'Envía tus cambios a Manuel para que los apruebe':'';
   let h='';
   for(const [i,v] of st.edits){ const f=st.an.frags[i]; h+=`<li data-t="t" data-k="${i}"><div class="cambio-txt"><span class="que">${f.ctx.tipo==='Enlace'?'Texto de enlace':esc(f.ctx.tipo)}${st.glob.has(i)?' · en todas las páginas':''}</span><s>${esc(corto(f.text,80))}</s><span>${v?esc(corto(v,80)):'<i>(vacío)</i>'}</span></div><button type="button" class="enlace" data-quitar>Quitar</button></li>`; }
   for(const [k,v] of st.linkEdits){ const L=st.an.links[k]; h+=`<li data-t="l" data-k="${k}"><div class="cambio-txt"><span class="que">Dirección del enlace${st.linkGlob.has(k)?' · en todas las páginas':''}</span><s>${esc(corto(hrefDe(L),80))}</s><span>${esc(corto(v,80))}</span></div><button type="button" class="enlace" data-quitar>Quitar</button></li>`; }
@@ -923,7 +945,7 @@ $('#lista-cambios').addEventListener('click',e=>{
 });
 $('#descartar').onclick=()=>{ descartarTodo(); aviso('info','Cambios descartados.'); };
 function descartarTodo(){ limpiarCambios(); st.sel=null; pintarTodo(); recargarVista(); }
-function pintarTodo(){ pintarPaginas(); pintarLista(); pintarSeleccion(); actualizarCambios(); }
+function pintarTodo(){ pintarPaginas(); pintarLista(); pintarSeleccion(); actualizarCambios(); pintarPendiente(); }
 
 /* ---------- Publicar (un solo commit con todos los archivos) ---------- */
 function cambiosPagina(an){
@@ -1035,29 +1057,44 @@ function terminarPublicacion(web,C1,msg,fich,nuevoPag,extra,espera1,modo){
 }
 async function publicarUsuario(){
   st.ocupado=true; actualizarCambios();
-  const espera1=aviso('espera','Publicando…',null,0);
+  const espera1=aviso('espera','Enviando a Manuel…',null,0);
   const web=st.web;
   try{
-    for(let intento=0;intento<3;intento++){
-      const R=cambiosPagina(st.an);
-      const a=await srv(`/leer?repo=${encodeURIComponent(web.repo)}&path=${encodeURIComponent(st.path)}`);
-      const actual={sha:a.sha,texto:DEC.decode(b64ABytes(a.contenido))};
-      const nuevoPag=actual.sha===st.sha?aplicar(st.src,R):reaplicar(st.src,R,actual.texto);
-      const fich=[];
-      for(const im of st.imgEdits.values()) fich.push({path:im.repoPath,bytes:im.bytes,prev:null});
-      fich.push({path:st.path,bytes:ENC.encode(nuevoPag),prev:actual.sha,esPagina:true});
-      const msg=mensajeCommit(0);
-      espera1.texto('Subiendo los cambios…');
-      let res;
-      try{ res=await srv('/publicar',{method:'POST',body:{repo:web.repo,mensaje:msg,archivos:fich.map(f=>({path:f.path,contenido:bytesAB64(f.bytes),previo:f.prev}))}}); }
-      catch(e){ if(e.status===409&&intento<2){ espera1.texto('Alguien acaba de publicar otra cosa; vuelvo a intentarlo…'); continue; } throw e; }
-      for(const f of fich) f.nuevo=(res.archivos.find(x=>x.path===f.path)||{}).sha;
-      terminarPublicacion(web,res.commit,msg,fich,nuevoPag,0,espera1,'usuario');
-      return true;
-    }
-  }catch(e){ espera1.cerrar(); aviso('error','No se ha publicado. '+e.message); return false; }
+    const nuevoPag=aplicar(st.src,cambiosPagina(st.an));
+    const fich=[];
+    for(const im of st.imgEdits.values()) fich.push({path:im.repoPath,contenido:bytesAB64(im.bytes)});
+    fich.push({path:st.path,contenido:bytesAB64(ENC.encode(nuevoPag)),previo:st.base||st.sha});
+    const r=await srv('/proponer',{method:'POST',body:{repo:web.repo,mensaje:mensajeCommit(0),archivos:fich}});
+    for(const im of st.imgEdits.values()) st.fotosProp.push({nombre:im.repoPath.split('/').pop(),dataURL:im.dataURL});
+    st.base=st.base||st.sha; st.src=nuevoPag; st.pendiente={fecha:r.fecha};
+    limpiarCambios(); st.sel=null; st.an=analizar(st.src); pintarTodo(); recargarVista();
+    espera1.cerrar();
+    aviso('ok','Enviado. Manuel lo revisará y, cuando lo apruebe, saldrá en la web. Puedes seguir cambiando cosas y volver a enviar.',[{t:'Retirar el envío',f:retirarEnvio}],20000);
+    return true;
+  }catch(e){ espera1.cerrar(); aviso('error','No se ha enviado. '+e.message); return false; }
   finally{ st.ocupado=false; actualizarCambios(); }
-  return false;
+}
+function cargarMia(p){
+  const pag=p.archivos.find(a=>a.esPag); if(!pag) return;
+  st.src=DEC.decode(b64ABytes(pag.contenido)); st.base=pag.previo; st.pendiente={fecha:p.fecha};
+  st.fotosProp=p.archivos.filter(a=>!a.esPag).map(a=>({nombre:a.path.split('/').pop(),dataURL:'data:image/'+(a.path.endsWith('.png')?'png':'jpeg')+';base64,'+a.contenido}));
+}
+function haceCuanto(t){
+  const s=Math.max(0,(Date.now()-t)/1000);
+  if(s<90) return 'hace un momento'; if(s<3600) return `hace ${Math.round(s/60)} min`; if(s<86400) return `hace ${Math.round(s/3600)} h`;
+  const d=new Date(t), z=x=>String(x).padStart(2,'0'); return `el ${d.getDate()}/${d.getMonth()+1} a las ${d.getHours()}:${z(d.getMinutes())}`;
+}
+function pintarPendiente(){
+  const b=$('#pend'); const on=modoUsuario()&&!!st.pendiente&&!st.rev;
+  b.hidden=!on; if(!on){ b.innerHTML=''; return; }
+  b.innerHTML=`<div>Esta página tiene un <b>cambio tuyo esperando a que Manuel lo apruebe</b> (enviado ${esc(haceCuanto(st.pendiente.fecha))}). Lo que ves es tu versión. Si cambias algo más y pulsas Enviar, se suma a ese envío.</div><div><button type="button" class="enlace" id="pend-retirar">Retirar el envío</button></div>`;
+  $('#pend-retirar').onclick=retirarEnvio;
+}
+async function retirarEnvio(){
+  if(st.ocupado||!st.web) return;
+  if(hayCambios()){ aviso('info','Antes de retirar el envío, envía o descarta los cambios que tienes a medias.'); return; }
+  try{ await srv(`/mia?repo=${encodeURIComponent(st.web.repo)}&path=${encodeURIComponent(st.path)}`,{method:'DELETE'}); aviso('ok','Envío retirado. La página vuelve a estar como en la web.'); abrir(st.web,st.ruta); }
+  catch(e){ aviso('error','No he podido retirarlo. '+e.message); }
 }
 async function comprobarEnVivo(web,ruta,esperado,C1){
   const url=urlWeb(web,ruta);
@@ -1077,14 +1114,6 @@ async function deshacer(){
   const av=aviso('espera','Deshaciendo el último cambio…',null,0);
   try{
     const web=u.web;
-    if(u.modo==='usuario'){
-      try{ await srv('/publicar',{method:'POST',body:{repo:web.repo,mensaje:'Deshacer: '+u.msg,archivos:u.fich.map(f=>({path:f.path,sha:f.prev,previo:f.nuevo}))}}); }
-      catch(e){ if(e.status===409) throw new Error('Después de tu cambio se ha publicado otro en la misma página. Pídele a Manuel que lo deshaga.'); throw e; }
-      st.ultimo=null; av.cerrar();
-      aviso('ok','Deshecho. La web vuelve a estar como antes en uno o dos minutos.');
-      if(st.web===web&&st.ruta===u.ruta) abrir(web,u.ruta);
-      return;
-    }
     const ref=await gh(api(web,'/git/ref/heads/main')); const C=ref.object.sha;
     const com=await gh(api(web,`/git/commits/${C}`));
     if(C!==u.C1){
@@ -1117,7 +1146,7 @@ async function pintarConexion(){
     $('#ses-pags').innerHTML=ses.permisos.map(x=>{ const w=WEBS.find(q=>q.repo===x.repo); return w?`<li><a href="#${w.k}/${esc(x.ruta)}">${esc(w.nombre)} · ${esc(nombrePagina(w,x.ruta))}</a></li>`:''; }).join('')||'<li>Ninguna todavía. Habla con Manuel.</li>';
   }
   $('#admin').hidden=!(on&&SERVIDOR);
-  if(on&&SERVIDOR) cargarAdmin();
+  if(on&&SERVIDOR) cargarAdmin(); else { adm.props=[]; pintarRevLista(); }
   if(on){ try{ const u=await gh('/user'); $('#con-user').textContent='Conectado como '+u.login; if(u.login.toLowerCase()!==OWNER) aviso('info',`Ese código es de la cuenta ${u.login}, no de ${OWNER}. Puede que no deje publicar.`); }catch(e){ if(e.status===401){ aviso('error',e.message); } } }
 }
 $('#conectar').onclick=async()=>{
@@ -1138,9 +1167,10 @@ $('#ses-no').addEventListener('submit',async ev=>{
     ses={sesion:r.sesion,usuario:r.usuario,nombre:r.nombre,permisos:r.permisos}; guardarSes(ses);
     $('#ses-clave').value='';
     refrescarAcceso();
-    aviso('ok','Hola, '+r.nombre.split(' ')[0]+'. Pincha en el texto que quieras cambiar y luego pulsa Publicar.');
+    aviso('ok','Hola, '+r.nombre.split(' ')[0]+'. Pincha en el texto que quieras cambiar y luego pulsa Enviar.');
     const x=r.permisos[0]; const w=x&&WEBS.find(q=>q.repo===x.repo);
     if(w&&!permitido(st.web,st.ruta)) ponerHash(w,x.ruta); else if(st.web) abrir(st.web,st.ruta);
+    actualizarSesion();
   }catch(e){ aviso('error',e.message); }
   finally{ $('#entrar').disabled=false; }
 });
@@ -1150,11 +1180,203 @@ $('#salir').onclick=()=>{
 };
 async function actualizarSesion(){
   if(!modoUsuario()) return;
-  try{ const r=await srv('/yo'); ses={...ses,nombre:r.nombre,permisos:r.permisos}; guardarSes(ses); refrescarAcceso(); }catch(e){}
+  try{
+    const r=await srv('/yo'); ses={...ses,nombre:r.nombre,permisos:r.permisos}; guardarSes(ses); refrescarAcceso();
+    for(const a of r.avisos||[]){
+      const w=WEBS.find(q=>q.repo===a.repo), pg=w?nombrePagina(w,rutaDe(a.path)):a.path;
+      if(a.estado==='aprobado') aviso('ok',`Manuel ha aprobado tu cambio en «${pg}». Ya está en la web.`,null,20000);
+      else aviso('info',`Manuel no ha aprobado tu cambio en «${pg}»${a.motivo?'. Te dice: «'+a.motivo+'»':'.'}`,null,0);
+    }
+  }catch(e){}
 }
 
+/* Revisión de cambios enviados (solo Manuel).
+   Se compara la página de partida con la enviada quitando textos, direcciones de enlaces y datos de fotos:
+   lo que queda (la «estructura») tiene que ser idéntico. Si no, alguien ha tocado el código y no se puede aprobar. */
+const ATR_FOTO=['src','alt','srcset','sizes','data-src','data-srcset','data-lazy-src','data-lazy-srcset'];
+function piezas(S){
+  const an=analizar(S), q=[];
+  for(const f of an.frags) q.push({s:f.s,e:f.e,tipo:'t',f});
+  for(const L of an.links){ q.push({s:L.nameEnd,e:L.nameEnd,tipo:'tag',tag:L}); const h=L.attrs.get('href'); if(h) q.push({s:h.ws,e:h.end,tipo:'a',nombre:'href',tag:L,at:h}); }
+  for(const I of an.imgs){ q.push({s:I.nameEnd,e:I.nameEnd,tipo:'tag',tag:I}); for(const nm of ATR_FOTO){ const a=I.attrs.get(nm); if(a) q.push({s:a.ws,e:a.end,tipo:'a',nombre:nm,tag:I,at:a}); } }
+  q.sort((x,y)=>(x.s-y.s)||(x.e-y.e));
+  let esq='', p=0, lt=0; const slots=new Map(), tags=new Map();
+  for(const x of q){
+    if(x.s<p) continue;
+    const tr=S.slice(p,x.s); esq+=tr; for(let i=0;i<tr.length;i++) if(tr.charCodeAt(i)===60) lt++;
+    if(x.tipo==='tag') tags.set(lt,x.tag);
+    else slots.set((x.tipo==='t'?'t':'a:'+x.nombre)+'@'+lt,{...x,lt,valor:x.tipo==='t'?x.f.text:dec(x.at.value)});
+    p=x.e;
+  }
+  esq+=S.slice(p);
+  return {an,slots,tags,esq:esq.replace(/\s+/g,' ').replace(/> /g,'>').replace(/ </g,'<')};
+}
+function urlPeligrosa(v){ const x=String(v||'').replace(/[\u0000- \u007f]+/g,'').toLowerCase(); const m=/^([a-z][a-z0-9+.\-]*):/.exec(x); return !!m&&!['http','https','mailto','tel'].includes(m[1]); }
+function compararPaginas(base,prop){
+  const A=piezas(base), B=piezas(prop);
+  const res={A,B,estructura:A.esq===B.esq,cambios:[],trozo:''};
+  if(!res.estructura){
+    let i=0, j=0; const n=Math.min(base.length,prop.length);
+    while(i<n&&base[i]===prop[i]) i++;
+    while(j<n-i&&base[base.length-1-j]===prop[prop.length-1-j]) j++;
+    const a=Math.max(0,i-60), b=Math.min(prop.length-j+60,i+400);
+    res.trozo=(a>0?'…':'')+prop.slice(a,b)+(b<prop.length?'…':'');
+    return res;
+  }
+  for(const k of new Set([...A.slots.keys(),...B.slots.keys()])){
+    const a=A.slots.get(k), b=B.slots.get(k), va=a?a.valor:'', vb=b?b.valor:'';
+    if(va===vb) continue;
+    const x=a||b;
+    res.cambios.push({k,tipo:x.tipo,nombre:x.nombre,lt:x.lt,a,b,antes:va,despues:vb,peligro:x.tipo==='a'&&!!vb&&urlPeligrosa(vb)});
+  }
+  res.cambios.sort((x,y)=>x.lt-y.lt);
+  return res;
+}
+function reemplazosRev(r){
+  const R=[], noEncaja='No puedo encajar este cambio en la versión actual de la página. Recházalo y pídele que lo vuelva a hacer.';
+  for(const c of r.cmp.cambios){
+    const a=c.a, b=c.b;
+    if(c.tipo==='t'){ if(!a) throw new Error(noEncaja); R.push({s:a.f.s,e:a.f.e,txt:b?b.f.raw:a.f.lead+a.f.trail}); continue; }
+    const txt=b?r.textoProp.slice(b.at.ws,b.at.end):'';
+    if(a) R.push({s:a.at.ws,e:a.at.end,txt});
+    else{ const t=r.cmp.A.tags.get(c.lt); if(!t) throw new Error(noEncaja); R.push({s:t.nameEnd,e:t.nameEnd,txt}); }
+  }
+  return R;
+}
+const fotoDe=(r,v)=>r.fotos.find(f=>String(v||'').endsWith('/'+f.nombre));
+function vistaRev(){
+  const r=st.rev, S=r.textoProp, B=r.cmp.B, ins=[], marcadas=new Set();
+  r.cmp.cambios.forEach((c,n)=>{
+    const b=c.b; if(!b) return;
+    if(c.tipo==='t'){ ins.push({s:b.f.s,e:b.f.e,txt:`<span data-rv="${n}">${b.f.raw}</span>`}); return; }
+    if(!marcadas.has(b.tag)){ marcadas.add(b.tag); ins.push({s:b.tag.nameEnd,e:b.tag.nameEnd,txt:` data-rv="${n}"`}); }
+  });
+  for(const I of B.an.imgs){ const a=I.attrs.get('src'), f=a&&fotoDe(r,dec(a.value)); if(f) ins.push(attrRep(a,f.dataURL)); }
+  const cabeza=`<base href="${baseVista(r.web,r.ruta).replace(/"/g,'%22')}"><script>window.__edY=0;window.__edModo="navegar";${PUENTE}<\/script><style>${CSS_VISTA}[data-rv]{background-color:rgba(255,205,86,.5)!important;box-shadow:0 0 0 3px rgba(255,205,86,.5)}img[data-rv]{outline:4px solid rgba(240,180,40,.95);outline-offset:2px}</style>`;
+  if(B.an.headIns>=0) ins.push({s:B.an.headIns,e:B.an.headIns,txt:cabeza});
+  else ins.push({s:0,e:0,txt:'<head>'+cabeza+'</head>'});
+  return aplicar(S,ins);
+}
+function filaRev(c,n){
+  const r=st.rev;
+  const que=c.tipo==='t'?'Texto':c.nombre==='href'?'Dirección de enlace':c.nombre==='src'?'Foto':c.nombre==='alt'?'Descripción de foto':'Dato de foto ('+c.nombre+')';
+  if(c.tipo==='a'&&!['href','src','alt'].includes(c.nombre)&&!c.despues) return '';  // al cambiar una foto se quitan sus tamaños alternativos
+  let antes=esc(corto(c.antes||'(vacío)',160)), despues=esc(corto(c.despues||'(vacío)',160));
+  if(c.nombre==='src'){
+    const f=fotoDe(r,c.despues);
+    antes=c.antes?`<img class="rev-foto" src="${esc(new URL(c.antes,baseVista(r.web,r.ruta)).href)}" alt="">`:'(sin foto)';
+    despues=f?`<img class="rev-foto" src="${f.dataURL}" alt="">`:despues;
+  }
+  const extra=c.peligro?'<span class="nota">Puede ejecutar código al pincharlo.</span>':c.nombre==='href'?`<span class="nota">${esc(describirEnlace(c.despues))}</span>`:'';
+  return `<li data-rv="${n}"><div class="cambio-txt"><span class="que">${que}${c.peligro?' <span class="chip mal">Peligroso</span>':''}</span><s>${antes}</s><span>${despues}</span>${extra}</div></li>`;
+}
+function pintarRev(){
+  const r=st.rev, box=$('#rev-tarjeta');
+  if(!r){ box.hidden=true; box.innerHTML=''; return; }
+  const filas=r.cmp.cambios.map(filaRev).join(''), nf=r.fotos.length;
+  const peligro=!r.cmp.estructura||r.cmp.cambios.some(c=>c.peligro);
+  let h=`<div class="sel-cab"><h2>Cambio de ${esc(r.prop.nombre)}</h2><button type="button" class="cerrar" id="rev-cerrar" aria-label="Cerrar">×</button></div>
+    <p class="nota">${esc(r.web.nombre)} · ${esc(nombrePagina(r.web,r.ruta))} · enviado ${esc(haceCuanto(r.prop.fecha))}${nf?` · ${nf} foto${nf>1?'s':''} nueva${nf>1?'s':''}`:''}. A la izquierda ves la página tal como quedaría.</p>`;
+  if(!r.cmp.estructura) h+=`<div class="peligro"><b>Cuidado: este envío toca el código de la página</b><span>No solo cambia textos, enlaces o fotos. El editor nunca hace eso por sí solo: alguien lo ha forzado. No lo apruebes.</span><pre class="trozo">${esc(r.cmp.trozo)}</pre></div>`;
+  else if(peligro) h+=`<div class="peligro"><b>Cuidado: hay una dirección peligrosa</b><span>Un enlace o una foto lleva una dirección que puede ejecutar código. No lo apruebes.</span></div>`;
+  if(r.cambiada&&r.cmp.estructura) h+=`<p class="nota">Desde que lo envió, la página ha cambiado en la web. Al aprobar, su cambio se encaja sobre la versión actual.</p>`;
+  if(r.cmp.estructura) h+=filas?`<ul class="lista-cambios" id="rev-cambios">${filas}</ul><p class="nota">Los cambios salen en amarillo en la vista. Pincha uno para ir a él.</p>`:'<p class="nota">No cambia ningún texto, enlace ni foto.</p>';
+  h+=`<label class="lbl" for="rev-motivo">Si lo rechazas, puedes decirle por qué (opcional)</label>
+    <input type="text" id="rev-motivo" maxlength="300" autocomplete="off" placeholder="Por ejemplo: el horario no es ese">
+    <div class="fila"><button type="button" class="btn primario" id="rev-aprobar"${peligro?' disabled':''}>Aprobar y publicar</button><button type="button" class="btn peligroso" id="rev-rechazar">Rechazar</button></div>`;
+  box.innerHTML=h; box.hidden=false;
+  $('#rev-cerrar').onclick=()=>cerrarRev(st.rev&&st.rev.antes);
+  $('#rev-aprobar').onclick=aprobarRev;
+  $('#rev-rechazar').onclick=rechazarRev;
+  const lc=$('#rev-cambios'); if(lc) lc.onclick=e=>{ const li=e.target.closest('li[data-rv]'); if(li) enviar({type:'ver',sel:`[data-rv="${li.dataset.rv}"]`}); };
+}
+async function abrirRev(id){
+  if(st.ocupado) return;
+  if(hayCambios()){ aviso('info','Antes de revisar, publica o descarta los cambios que tienes a medias en esta página.'); return; }
+  mostrarCargando('Cargando el cambio…');
+  try{
+    const prop=await srv('/admin/propuesta?id='+encodeURIComponent(id),{admin:true});
+    const web=WEBS.find(w=>w.repo===prop.repo), pag=prop.archivos.find(a=>a.esPag);
+    if(!web||!pag) throw new Error('Envío no válido.');
+    const ruta=rutaDe(pag.path);
+    const base=DEC.decode(await leerBlob(web,pag.previo));
+    const actual=await leerArchivo(web,pag.path,'main');
+    const textoProp=DEC.decode(b64ABytes(pag.contenido));
+    const fotos=prop.archivos.filter(a=>!a.esPag).map(a=>({path:a.path,nombre:a.path.split('/').pop(),dataURL:'data:image/'+(a.path.endsWith('.png')?'png':'jpeg')+';base64,'+a.contenido}));
+    st.carga++;
+    const antes=st.rev?st.rev.antes:(st.web?{web:st.web,ruta:st.ruta}:null);
+    st.rev={id,prop,web,ruta,base,textoProp,fotos,antes,cmp:compararPaginas(base,textoProp),cambiada:actual.sha!==pag.previo};
+    await cargarPaginas(web);
+    st.web=web; st.ruta=ruta; st.sel=null; pintarPaginas(); pintarSeleccion();
+    document.body.classList.add('revisando'); pintarRev(); actualizarCambios();
+    $('#panel').scrollTop=0;
+    vista.srcdoc=vistaRev();
+  }catch(e){ ocultarCargando(); aviso('error','No he podido abrir el cambio. '+e.message); }
+}
+function dejarRev(){ if(!st.rev) return; st.rev=null; document.body.classList.remove('revisando'); pintarRev(); }
+function cerrarRev(destino){
+  dejarRev();
+  const d=destino||leerHash();
+  history.replaceState(null,'','#'+d.web.k+'/'+d.ruta);
+  abrir(d.web,d.ruta);
+}
+async function aprobarRev(){
+  const r=st.rev; if(!r||st.ocupado) return;
+  st.ocupado=true; $('#rev-aprobar').disabled=true; $('#rev-rechazar').disabled=true;
+  const av=aviso('espera','Publicando el cambio de '+r.prop.nombre.split(' ')[0]+'…',null,0);
+  const web=r.web, pag=r.prop.archivos.find(a=>a.esPag);
+  try{
+    let C1=null;
+    for(let intento=0;intento<3&&!C1;intento++){
+      const C0=(await gh(api(web,'/git/ref/heads/main'))).object.sha;
+      const T0=(await gh(api(web,`/git/commits/${C0}`))).tree.sha;
+      const actual=await leerArchivo(web,pag.path,C0);
+      const nuevo=actual.sha===pag.previo?r.textoProp:reaplicar(r.base,reemplazosRev(r),actual.texto);
+      const entradas=[];
+      for(const a of r.prop.archivos){
+        if(!a.esPag&&!nuevo.includes(a.path.split('/').pop())) continue;
+        const bytes=a.esPag?ENC.encode(nuevo):b64ABytes(a.contenido);
+        const bl=await gh(api(web,'/git/blobs'),{method:'POST',body:JSON.stringify({content:bytesAB64(bytes),encoding:'base64'})});
+        entradas.push({path:a.path,mode:'100644',type:'blob',sha:bl.sha});
+      }
+      const T1=(await gh(api(web,'/git/trees'),{method:'POST',body:JSON.stringify({base_tree:T0,tree:entradas})})).sha;
+      const msg=`${r.prop.mensaje} · por ${r.prop.nombre} · aprobado por Manuel`;
+      const C=(await gh(api(web,'/git/commits'),{method:'POST',body:JSON.stringify({message:msg,tree:T1,parents:[C0],author:{name:r.prop.nombre,email:'editor@teots.org',date:new Date(r.prop.fecha).toISOString()}})})).sha;
+      try{ await gh(api(web,'/git/refs/heads/main'),{method:'PATCH',body:JSON.stringify({sha:C,force:false})}); C1=C; }
+      catch(e){ if(e.status===422&&intento<2){ av.texto('Alguien acaba de publicar otra cosa; vuelvo a intentarlo…'); continue; } throw e; }
+    }
+    await srv('/admin/resolver',{method:'POST',admin:true,body:{id:r.id,estado:'aprobado'}});
+    av.cerrar();
+    aviso('ok',`Aprobado y publicado. Se verá en la web en uno o dos minutos y ${r.prop.nombre.split(' ')[0]} recibirá el aviso.`,[{t:'Ver en GitHub',href:`https://github.com/${OWNER}/${web.repo}/commit/${C1}`}],20000);
+    st.ocupado=false; cerrarRev({web,ruta:r.ruta}); cargarAdmin();
+  }catch(e){ av.cerrar(); aviso('error','No se ha publicado. '+e.message); const b1=$('#rev-aprobar'), b2=$('#rev-rechazar'); if(b1) b1.disabled=false; if(b2) b2.disabled=false; }
+  finally{ st.ocupado=false; }
+}
+async function rechazarRev(){
+  const r=st.rev; if(!r||st.ocupado) return;
+  st.ocupado=true;
+  try{
+    await srv('/admin/resolver',{method:'POST',admin:true,body:{id:r.id,estado:'rechazado',motivo:$('#rev-motivo').value.trim()}});
+    aviso('ok',`Rechazado. La web no cambia y ${r.prop.nombre.split(' ')[0]} verá el aviso cuando vuelva a entrar.`);
+    st.ocupado=false; cerrarRev(r.antes); cargarAdmin();
+  }catch(e){ aviso('error','No he podido rechazarlo. '+e.message); }
+  finally{ st.ocupado=false; }
+}
+function pintarRevLista(){
+  const L=(token&&adm.props)||[];
+  $('#rev').hidden=!L.length; $('#rev-n').textContent=L.length||'';
+  document.title=(L.length?`(${L.length}) `:'')+'Editor de webs';
+  $('#rev-lista').innerHTML=L.map(p=>{
+    const w=WEBS.find(q=>q.repo===p.repo), pg=w?`${w.nombre} · ${nombrePagina(w,rutaDe(p.path))}`:p.path;
+    return `<li data-id="${esc(p.id)}"><div class="cambio-txt"><b>${esc(p.nombre)}</b><span>${esc(pg)}</span><span class="que">${esc(haceCuanto(p.fecha))}${p.fotos?` · ${p.fotos} foto${p.fotos>1?'s':''}`:''}</span></div><button type="button" class="btn suave">Revisar</button></li>`;
+  }).join('');
+}
+$('#rev-lista').addEventListener('click',e=>{ const li=e.target.closest('li[data-id]'); if(li) abrirRev(li.dataset.id); });
+setInterval(()=>{ if(token&&SERVIDOR&&!document.hidden&&!st.rev) cargarAdmin(); },120000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&token&&SERVIDOR&&!st.rev) cargarAdmin(); });
+
 /* Administración: personas con usuario (solo Manuel, conectado con GitHub) */
-const adm={usuarios:[],editando:null,sel:new Set(),usuarioTocado:false,quitar:null};
+const adm={usuarios:[],props:[],editando:null,sel:new Set(),usuarioTocado:false,quitar:null};
 function slugPersona(n){ return plano(n).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
 function generarClave(){ const A='abcdefghjkmnpqrstuvwxyz23456789'; const v=crypto.getRandomValues(new Uint8Array(12)); let t=''; for(let i=0;i<12;i++){ t+=A[v[i]%A.length]; if(i===3||i===7) t+='-'; } return t; }
 function resumenPermisos(perms){
@@ -1164,8 +1386,8 @@ function resumenPermisos(perms){
 async function cargarAdmin(){
   try{
     const r=await srv('/admin/estado',{admin:true});
-    adm.usuarios=r.usuarios; $('#adm-activar').hidden=r.activado;
-    pintarAdmin();
+    adm.usuarios=r.usuarios; adm.props=r.propuestas||[];
+    pintarAdmin(); pintarRevLista();
   }catch(e){ $('#adm-lista').innerHTML=`<li class="nota">${esc(e.message)}</li>`; }
 }
 function pintarAdmin(){
@@ -1181,10 +1403,6 @@ $('#adm-lista').addEventListener('click',async e=>{
   try{ await srv('/admin/usuario?u='+encodeURIComponent(u),{method:'DELETE',admin:true}); adm.quitar=null; aviso('ok','Quitado. Esa persona ya no puede entrar.'); cargarAdmin(); }
   catch(err){ aviso('error',err.message); }
 });
-$('#adm-activar-btn').onclick=async()=>{
-  try{ await srv('/admin/activar',{method:'POST',admin:true}); $('#adm-activar').hidden=true; aviso('ok','Activado. Las personas que añadas ya pueden publicar.'); }
-  catch(e){ aviso('error',e.message); }
-};
 async function pintarPagsAdmin(){
   const w=WEBS.find(q=>q.k===$('#adm-web').value)||WEBS[0];
   $('#adm-pags').innerHTML='<p class="nota">Cargando páginas…</p>';
@@ -1241,7 +1459,7 @@ $('#adm-guardar').onclick=async()=>{
     await srv('/admin/usuario',{method:'POST',admin:true,body:{usuario,nombre,permisos,...(clave?{clave}:{})}});
     cerrarFormPersona(); cargarAdmin();
     if(clave){
-      $('#adm-mensaje').textContent=`Hola, ${nombre.split(' ')[0]}. Ya puedes cambiar tu página de la web desde aquí:\nhttps://teots.org/editor/\n\nUsuario: ${usuario}\nContraseña: ${clave}\n\nEntra, pincha en el texto o la foto que quieras cambiar y pulsa «Publicar». Si te equivocas, aparece «Deshacer».`;
+      $('#adm-mensaje').textContent=`Hola, ${nombre.split(' ')[0]}. Ya puedes cambiar tu página de la web desde aquí:\nhttps://teots.org/editor/\n\nUsuario: ${usuario}\nContraseña: ${clave}\n\nEntra, pincha en el texto o la foto que quieras cambiar y pulsa «Enviar». Yo lo reviso y, cuando lo apruebe, saldrá en la web.`;
       $('#adm-clave').hidden=false; $('#adm-copiado').hidden=true;
       $('#adm-clave').scrollIntoView({block:'nearest',behavior:'smooth'});
     } else aviso('ok','Guardado.');
