@@ -188,11 +188,9 @@ code{font-family:var(--mono);font-size:.85em;background:var(--bg);border-radius:
       <div id="con-no" class="sec">
         <p class="nota">Para <b>publicar</b> hay que conectar el editor con tu cuenta de GitHub, una vez en cada dispositivo. Para mirar y probar cambios no hace falta.</p>
         <ol class="pasos">
-          <li>Abre <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a> con la sesión de <b>moguritto</b>.</li>
-          <li><b>Token name</b> (nombre): <i>Editor de webs</i>. <b>Expiration</b> (caducidad): la más larga que te deje.</li>
-          <li><b>Repository access</b> (acceso a repositorios): <b>Only select repositories</b> (solo los elegidos) y marca los seis: espacioteots-web, teots-web, apder-web, ianivillage-web, teotsai-web y theswisstree-web.</li>
-          <li><b>Permissions</b> (permisos): añade <b>Contents</b> (contenido) con <b>Read and write</b> (lectura y escritura).</li>
-          <li>Pulsa <b>Generate token</b> (generar token), copia el código que empieza por <code>github_pat_</code> y pégalo aquí:</li>
+          <li>Pulsa <a class="btn suave" href="https://github.com/settings/personal-access-tokens/new?name=Editor+de+webs&amp;description=Editor+visual+de+teots.org%2Feditor&amp;target_name=moguritto&amp;expires_in=none&amp;contents=write" target="_blank" rel="noopener">Abrir GitHub ya rellenado</a> (con la sesión de <b>moguritto</b>). Si pide confirmar, usa tu llave de acceso <i>(passkey)</i>.</li>
+          <li>En <b>Repository access</b> (acceso a repositorios) elige <b>All repositories</b> (todos los repositorios).</li>
+          <li>Baja hasta el final, pulsa <b>Generate token</b> (generar token), copia el código <code>github_pat_…</code> y pégalo aquí:</li>
         </ol>
         <label class="vh" for="token">Código de acceso de GitHub</label>
         <input type="text" id="token" name="codigo-editor" placeholder="github_pat_…" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other" class="secreto">
