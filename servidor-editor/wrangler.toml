@@ -1,0 +1,12 @@
+name = "editor-webs"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+workers_dev = true
+
+[vars]
+ORIGEN = "https://teots.org"
+DUENO = "moguritto"
+
+[[kv_namespaces]]
+binding = "USUARIOS"
+id = "44dbbb3d8c58423cb7d8875ed1a643bc"
