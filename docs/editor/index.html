@@ -1197,7 +1197,7 @@ function pintarResumenAdmin(){
   $('#adm-resumen').textContent='Podrá cambiar: '+resumenPermisos(perms)+'.';
 }
 function abrirFormPersona(x){
-  adm.editando=x?x.usuario:null; adm.usuarioTocado=!!x;
+  adm.editando=x?x.usuario:null; adm.usuarioTocado=!!x; adm.auto=null; adm.pagsTocadas=!!x;
   adm.sel=new Set(x?x.permisos.map(q=>q.repo+'|'+q.ruta):[]);
   $('#adm-form-tit').textContent=x?'Cambiar a '+x.nombre:'Nueva persona';
   $('#adm-nombre').value=x?x.nombre:''; $('#adm-usuario').value=x?x.usuario:''; $('#adm-usuario').disabled=!!x;
@@ -1213,15 +1213,22 @@ $('#adm-nuevo').onclick=()=>abrirFormPersona(null);
 $('#adm-cerrar').onclick=cerrarFormPersona;
 $('#adm-clave-cerrar').onclick=()=>{ $('#adm-clave').hidden=true; };
 $('#adm-web').onchange=pintarPagsAdmin;
-$('#adm-pags').addEventListener('change',e=>{ const c=e.target.closest('input[data-k]'); if(!c) return; if(c.checked) adm.sel.add(c.dataset.k); else adm.sel.delete(c.dataset.k); pintarResumenAdmin(); });
+$('#adm-pags').addEventListener('change',e=>{ const c=e.target.closest('input[data-k]'); if(!c) return; adm.pagsTocadas=true; if(c.checked) adm.sel.add(c.dataset.k); else adm.sel.delete(c.dataset.k); pintarResumenAdmin(); });
 $('#adm-usuario').addEventListener('input',()=>{ adm.usuarioTocado=true; });
 $('#adm-nombre').addEventListener('input',async()=>{
   if(adm.editando) return;
   const n=$('#adm-nombre').value.trim();
   if(!adm.usuarioTocado) $('#adm-usuario').value=slugPersona(n.split(/\s+/)[0]||'');
   const w=WEBS.find(q=>q.k==='espacioteots'); const sl=slugPersona(n);
-  if(w&&sl.length>3){ await cargarPaginas(w); const r=(w.paginas||[]).find(q=>q===sl+'/'||(q.startsWith(sl.split('-')[0]+'-')&&sl.startsWith(q.replace(/\/$/,'')))); 
-    if(r&&!adm.sel.size){ adm.sel.add(w.repo+'|'+r); $('#adm-web').value=w.k; pintarPagsAdmin(); } }
+  if(!w||adm.pagsTocadas) return;
+  if(sl.length>3) await cargarPaginas(w);
+  if($('#adm-nombre').value.trim()!==n) return;  // ya ha escrito más
+  const r=sl.length>3?(w.paginas||[]).find(q=>q===sl+'/'||(q.startsWith(sl.split('-')[0]+'-')&&sl.startsWith(q.replace(/\/$/,'')))):null;
+  const k=r?w.repo+'|'+r:null;
+  if(k===adm.auto) return;
+  if(adm.auto) adm.sel.delete(adm.auto);
+  adm.auto=k; if(k){ adm.sel.add(k); $('#adm-web').value=w.k; }
+  pintarPagsAdmin();
 });
 $('#adm-guardar').onclick=async()=>{
   const nombre=$('#adm-nombre').value.trim(), usuario=$('#adm-usuario').value.trim().toLowerCase();
