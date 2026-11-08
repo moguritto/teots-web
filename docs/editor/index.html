@@ -185,7 +185,7 @@ pre.trozo{font:12px/1.45 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere
     <section class="tarjeta" id="rev-tarjeta" hidden></section>
     <div class="guardia" id="pend" hidden></div>
 
-    <p class="intro" id="intro"><b>Pincha en cualquier texto de la página</b> y escribe encima. Pulsa Intro para terminar. Nada sale a internet hasta que pulses <b>Publicar</b>.</p>
+    <p class="intro" id="intro"><b>Pincha en cualquier texto de la página</b> y escribe encima. Pulsa Intro para terminar. <span id="intro-fin">Nada sale a internet hasta que pulses <b>Publicar</b>.</span></p>
 
     <section class="tarjeta" id="sel" hidden></section>
 
@@ -922,6 +922,7 @@ function actualizarCambios(){
   const n=nCambios();
   const b=$('#publicar'), verbo=modoUsuario()?'Enviar':'Publicar'; b.disabled=n===0||st.ocupado||!!st.rev; b.querySelector('span').textContent=n?`${verbo} (${n})`:verbo;
   b.title=modoUsuario()?'Envía tus cambios a Manuel para que los apruebe':'';
+  $('#intro-fin').innerHTML=modoUsuario()?'Cuando termines, pulsa <b>Enviar</b>: Manuel lo revisa antes de que salga en la web.':'Nada sale a internet hasta que pulses <b>Publicar</b>.';
   let h='';
   for(const [i,v] of st.edits){ const f=st.an.frags[i]; h+=`<li data-t="t" data-k="${i}"><div class="cambio-txt"><span class="que">${f.ctx.tipo==='Enlace'?'Texto de enlace':esc(f.ctx.tipo)}${st.glob.has(i)?' · en todas las páginas':''}</span><s>${esc(corto(f.text,80))}</s><span>${v?esc(corto(v,80)):'<i>(vacío)</i>'}</span></div><button type="button" class="enlace" data-quitar>Quitar</button></li>`; }
   for(const [k,v] of st.linkEdits){ const L=st.an.links[k]; h+=`<li data-t="l" data-k="${k}"><div class="cambio-txt"><span class="que">Dirección del enlace${st.linkGlob.has(k)?' · en todas las páginas':''}</span><s>${esc(corto(hrefDe(L),80))}</s><span>${esc(corto(v,80))}</span></div><button type="button" class="enlace" data-quitar>Quitar</button></li>`; }
@@ -1346,6 +1347,7 @@ async function aprobarRev(){
       catch(e){ if(e.status===422&&intento<2){ av.texto('Alguien acaba de publicar otra cosa; vuelvo a intentarlo…'); continue; } throw e; }
     }
     await srv('/admin/resolver',{method:'POST',admin:true,body:{id:r.id,estado:'aprobado'}});
+    adm.props=adm.props.filter(x=>x.id!==r.id); pintarRevLista();
     av.cerrar();
     aviso('ok',`Aprobado y publicado. Se verá en la web en uno o dos minutos y ${r.prop.nombre.split(' ')[0]} recibirá el aviso.`,[{t:'Ver en GitHub',href:`https://github.com/${OWNER}/${web.repo}/commit/${C1}`}],20000);
     st.ocupado=false; cerrarRev({web,ruta:r.ruta}); cargarAdmin();
@@ -1357,6 +1359,7 @@ async function rechazarRev(){
   st.ocupado=true;
   try{
     await srv('/admin/resolver',{method:'POST',admin:true,body:{id:r.id,estado:'rechazado',motivo:$('#rev-motivo').value.trim()}});
+    adm.props=adm.props.filter(x=>x.id!==r.id); pintarRevLista();
     aviso('ok',`Rechazado. La web no cambia y ${r.prop.nombre.split(' ')[0]} verá el aviso cuando vuelva a entrar.`);
     st.ocupado=false; cerrarRev(r.antes); cargarAdmin();
   }catch(e){ aviso('error','No he podido rechazarlo. '+e.message); }
